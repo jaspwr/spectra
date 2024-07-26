@@ -32,9 +32,10 @@
       const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
 
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
       pipeline.render(gl, deltaTime);
 
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     }
 
     requestAnimationFrame(loop);

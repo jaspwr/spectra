@@ -10,6 +10,8 @@ export class PipeLine {
    */
   public constructor(project: Project, gl: WebGLRenderingContext) {
     const vsSource = `
+    #version 100
+
     attribute vec4 aVertexPosition;
     void main(void) {
         gl_Position = aVertexPosition;
@@ -17,6 +19,8 @@ export class PipeLine {
 `;
 
     const fsSource = `
+    #version 100
+
     #ifdef GL_ES
     precision highp float;
     #endif
@@ -133,7 +137,7 @@ class Geometry {
   vbo: WebGLBuffer;
 
   public constructor(gl: WebGLRenderingContext) {
-    const vertices = new Float32Array([0.0, 1.0, -1.0, -1.0, 1.0, -1.0]);
+    const vertices = new Float32Array([1.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0]);
 
     this.vbo = gl.createBuffer()!;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
@@ -141,13 +145,6 @@ class Geometry {
   }
 
   public render(gl: WebGLRenderingContext, program: WebGLProgram) {
-    const vertices = new Float32Array([0.0, 1.0, -1.0, -1.0, 1.0, -1.0]);
-
-    this.vbo = gl.createBuffer()!;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-
-
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
 
     const vertexPosition = gl.getAttribLocation(program, "aVertexPosition");
@@ -155,7 +152,7 @@ class Geometry {
     gl.enableVertexAttribArray(vertexPosition);
     gl.vertexAttribPointer(vertexPosition, 2, gl.FLOAT, false, 0, 0);
 
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
   }
 }
 
