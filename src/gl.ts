@@ -1,11 +1,15 @@
+import { Camera } from "./camera";
 import type { Project } from "./project";
 import { Shader, ShaderType } from "./shader";
-import { hashString, type Model } from "./utils";
+import { hashString, mat4_I, type Mat4, type Model } from "./utils";
+
+export const WINDOW_ASPECT: { value: number } = { value: 1 };
 
 export class GLProgram {
   public readonly program: WebGLProgram;
   public readonly uniforms: Record<string, WebGLUniformLocation>;
   public readonly uniformTypes: Record<string, string>;
+  public readonly attributes: Record<string, GLint>;
 
   public constructor(gl: WebGLRenderingContext, shaders: Shader[]) {
     this.program = gl.createProgram()!;
@@ -36,8 +40,21 @@ export class GLProgram {
 
     this.uniforms = uniforms;
     this.uniformTypes = uniformTypes;
+
+    let attributes: Record<string, GLint> = {};
+
+    const ATTRIBUTE_NAMES = ["position", "normal", "uv"];
+    for (let name of ATTRIBUTE_NAMES) {
+      let attr = gl.getAttribLocation(this.program, name);
+      if (attr === -1) continue;
+      attributes[name] = attr;
+    }
+
+    this.attributes = attributes;
   }
 }
+
+let camera = new Camera();
 
 export class RenderStep {
   program: GLProgram;
@@ -68,8 +85,24 @@ export class RenderStep {
       setter.set(gl, this.program);
     }
 
+    if (this.program.uniforms["projection"] !== undefined) {
+      gl.uniformMatrix4fv(
+        this.program.uniforms["projection"],
+        false,
+        camera.projection
+      );
+    }
+
+    if (this.program.uniforms["view"] !== undefined) {
+      gl.uniformMatrix4fv(this.program.uniforms["view"], false, camera.view);
+    }
+
+    if (this.program.uniforms["model"] !== undefined) {
+      gl.uniformMatrix4fv(this.program.uniforms["model"], false, mat4_I());
+    }
+
     for (let geometry of this.geometry) {
-      geometry.render(gl, this.program.program);
+      geometry.render(gl, this.program);
     }
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -105,8 +138,30 @@ export class UniformTimeSetter extends UniformSetterFloat {
   }
 }
 
+export class UniformMat4Setter implements UniformSetter {
+  protected name: string;
+  protected value: Mat4;
+
+  public constructor(name: string, value: Mat4) {
+    this.name = name;
+    this.value = value;
+
+    if (value.length !== 16) {
+      throw new Error("Invalid matrix size");
+    }
+  }
+
+  public set(gl: WebGLRenderingContext, program: GLProgram) {
+    gl.uniformMatrix4fv(
+      program.uniforms[this.name],
+      false,
+      new Float32Array(this.value)
+    );
+  }
+}
+
 interface Geometry {
-  render(gl: WebGLRenderingContext, program: WebGLProgram): void;
+  render(gl: WebGLRenderingContext, program: GLProgram): void;
 }
 
 export class Mesh implements Geometry {
@@ -123,8 +178,8 @@ export class Mesh implements Geometry {
     for (let face of model.faces) {
       for (let { vertexIndex, uvIndex, normalIndex } of face.points) {
         verticesFlat.push(...model.vertices[vertexIndex]);
-        normalsFlat.push(...model.normals[uvIndex]);
-        uvFlat.push(...model.uv[normalIndex]);
+        normalsFlat.push(...model.normals[normalIndex]);
+        uvFlat.push(...model.uv[uvIndex]);
       }
     }
 
@@ -135,7 +190,13 @@ export class Mesh implements Geometry {
     this.vertexCount = model.faces.length * 3;
   }
 
-  public render(gl: WebGLRenderingContext, program: WebGLProgram) {}
+  public render(gl: WebGLRenderingContext, program: GLProgram) {
+    bindVBOToAttribute(gl, this.vertices, program.attributes["position"], 3);
+    bindVBOToAttribute(gl, this.normals, program.attributes["normal"], 3);
+    bindVBOToAttribute(gl, this.uv, program.attributes["uv"], 2);
+
+    gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
+  }
 }
 
 export class FullscreenQuad implements Geometry {
@@ -151,13 +212,18 @@ export class FullscreenQuad implements Geometry {
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
   }
 
-  public render(gl: WebGLRenderingContext, program: WebGLProgram) {
+  public render(gl: WebGLRenderingContext, program: GLProgram) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
 
-    const vertexPosition = gl.getAttribLocation(program, "aVertexPosition");
-
-    gl.enableVertexAttribArray(vertexPosition);
-    gl.vertexAttribPointer(vertexPosition, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(program.attributes["position"]);
+    gl.vertexAttribPointer(
+      program.attributes["position"],
+      2,
+      gl.FLOAT,
+      false,
+      0,
+      0
+    );
 
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
   }
@@ -168,6 +234,17 @@ function createVBO(gl: WebGLRenderingContext, data: number[]): WebGLBuffer {
   gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
   gl.bufferData(gl.ARRAY_BUFFER, Float32Array.from(data), gl.STATIC_DRAW);
   return vbo;
+}
+
+function bindVBOToAttribute(
+  gl: WebGLRenderingContext,
+  vbo: WebGLBuffer,
+  attribute: GLint,
+  size: number
+) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  gl.enableVertexAttribArray(attribute);
+  gl.vertexAttribPointer(attribute, size, gl.FLOAT, false, 0, 0);
 }
 
 interface ShaderCompileError {

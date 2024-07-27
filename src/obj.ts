@@ -31,7 +31,7 @@ function parseOBJ(obj: string): Model {
   const vertices: Vec3[] = [];
   const normals: Vec3[] = [];
   const uv: Vec2[] = [];
-  const faces: Face[] = [];
+  let faces: Face[] = [];
 
   for (const line of lines) {
     const parts = line.split(" ").filter((p) => p !== "");
@@ -52,6 +52,10 @@ function parseOBJ(obj: string): Model {
     }
   }
 
+  console.log(faces);
+
+  faces = faces.flatMap(intoTriangles);
+
   return { vertices, normals, uv, faces };
 }
 
@@ -65,4 +69,13 @@ function parseFacePoint(point: string): Point | undefined {
     uvIndex: parseInt(indices[1]) - 1,
     normalIndex: parseInt(indices[2]) - 1,
   };
+}
+function intoTriangles(face: Face): Face[] {
+  const triangles: Face[] = [];
+  for (let i = 0; i + 3 <= face.points.length; i++) {
+    triangles.push({
+      points: [face.points[0], face.points[i + 1], face.points[i + 2]],
+    });
+  }
+  return triangles;
 }

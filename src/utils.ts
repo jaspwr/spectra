@@ -33,6 +33,34 @@ export function vec3(entries: number[]): Vec3 {
   return entries as Vec3;
 }
 
+type DoubleArray<T extends any[]> = [...T, ...T];
+
+export type Mat4 = DoubleArray<DoubleArray<DoubleArray<DoubleArray<[number]>>>>;
+
+export function mat4_0(): Mat4 {
+  return new Array(16).fill(0) as Mat4;
+}
+
+export function mat4_I(): Mat4 {
+  // prettier-ignore
+  return [
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+  ];
+}
+
+export function mat4_translate(vec: Vec3): Mat4 {
+  // prettier-ignore
+  return [
+    1, 0, 0, vec[0],
+    0, 1, 0, vec[1],
+    0, 0, 1, vec[2],
+    0, 0, 0, 1
+  ];
+}
+
 export interface Model {
   vertices: Vec3[];
   uv: Vec2[];

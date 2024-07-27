@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { PipeLine } from "../pipeline";
   import type { Project } from "../project";
+  import { WINDOW_ASPECT } from "../gl";
 
   export let project: Project | null;
   export let setErrors: (errors: string[]) => void;
@@ -12,7 +13,7 @@
     try {
       pipeline = new PipeLine(project, gl);
       setErrors([]);
-      console.log(pipeline)
+      console.log(pipeline);
     } catch (e) {
       let errors = e as string[];
       setErrors(errors);
@@ -35,7 +36,6 @@
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
       pipeline.render(gl, deltaTime);
-
     }
 
     requestAnimationFrame(loop);
@@ -51,6 +51,8 @@
     canv.width = parent.clientWidth;
     canv.height = parent.clientHeight;
 
+    WINDOW_ASPECT.value = canv.height / canv.width;
+
     if (gl !== null) {
       gl.viewport(0, 0, canv.width, canv.height);
     }
@@ -60,6 +62,8 @@
     gl = canv.getContext("webgl");
     if (!gl) throw new Error("WebGL not supported");
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
 
     resize();
 
