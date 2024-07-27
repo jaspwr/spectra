@@ -1,12 +1,14 @@
 <script lang="ts">
-  import { writable } from "svelte/store";
+  import { writable, type Writable } from "svelte/store";
   import {
     SvelteFlow,
     Controls,
     Background,
     BackgroundVariant,
-    MiniMap,
     type Node,
+    useSvelteFlow,
+    useEdges,
+    type Edge,
   } from "@xyflow/svelte";
 
   import "@xyflow/svelte/dist/style.css";
@@ -16,50 +18,23 @@
   import SideBar from "./PipelineEditorNodes/SideBar.svelte";
   import FrameBuffer from "./PipelineEditorNodes/FrameBuffer.svelte";
   import Geometry from "./PipelineEditorNodes/Geometry.svelte";
+  import ContextMenu from "./PipelineEditorNodes/ContextMenu.svelte";
+  import { projects, selectedProject } from "../project";
+  import Uniform from "./PipelineEditorNodes/Uniform.svelte";
 
   const nodeTypes = {
     shader: Shader,
     "gl-program": GLProgram,
     window: Window,
-    "framebuffer": FrameBuffer,
-    "geometry": Geometry,
+    framebuffer: FrameBuffer,
+    geometry: Geometry,
+    uniform: Uniform,
   };
 
-  const nodes = writable([
-    {
-      id: "1",
-      type: "input",
-      data: { label: "Input Node" },
-      position: { x: 0, y: 0 },
-    },
-    {
-      id: "2",
-      type: "window",
-      data: {},
-      position: { x: 0, y: 150 },
-    },
-    {
-      id: "3",
-      type: "shader",
-      data: { shaderId: writable(0) },
-      position: { x: 20, y: 150 },
-    },
-    {
-      id: "4",
-      type: "gl-program",
-      data: {},
-      position: { x: 50, y: 150 },
-    },
-  ]);
+  export let nodes: Writable<Node[]>;
+  export let edges: Writable<Edge[]>;
 
-  const edges = writable([
-    {
-      id: "1-2",
-      type: "default",
-      source: "1",
-      target: "2",
-    },
-  ]);
+  const { screenToFlowPosition } = useSvelteFlow();
 
   const onDragOver = (event: DragEvent) => {
     event.preventDefault();
@@ -78,10 +53,10 @@
 
     const type = event.dataTransfer.getData("application/svelteflow");
 
-    const position = {
-      x: 0,
-      y: 0,
-    };
+    const position = screenToFlowPosition({
+      x: event.clientX,
+      y: event.clientY,
+    });
 
     const newNode = {
       id: `${Math.random()}`,
@@ -94,6 +69,37 @@
     $nodes.push(newNode);
     $nodes = $nodes;
   };
+
+  let menu: {
+    id: string;
+    top?: number;
+    left?: number;
+    right?: number;
+    bottom?: number;
+  } | null;
+  let width: number;
+  let height: number;
+
+  function handleContextMenu({ detail: { event, node } }) {
+    // Prevent native context menu from showing
+    event.preventDefault();
+
+    // Calculate position of the context menu. We want to make sure it
+    // doesn't get positioned off-screen.
+    menu = {
+      id: node.id,
+      top: event.clientY < height - 200 ? event.clientY : undefined,
+      left: event.clientX < width - 200 ? event.clientX : undefined,
+      right: event.clientX >= width - 200 ? width - event.clientX : undefined,
+      bottom:
+        event.clientY >= height - 200 ? height - event.clientY : undefined,
+    };
+  }
+
+  // Close the context menu if it's open whenever the window is clicked.
+  function handlePaneClick() {
+    menu = null;
+  }
 </script>
 
 <div class="container">
@@ -104,11 +110,23 @@
     snapGrid={[25, 25]}
     fitView
     on:nodeclick={(event) => console.log("on node click", event.detail.node)}
+    on:nodecontextmenu={handleContextMenu}
+    on:paneclick={handlePaneClick}
     on:dragover={onDragOver}
     on:drop={onDrop}
   >
     <Controls />
     <Background variant={BackgroundVariant.Dots} />
+    {#if menu}
+      <ContextMenu
+        onClick={handlePaneClick}
+        id={menu.id}
+        top={menu.top}
+        left={menu.left}
+        right={menu.right}
+        bottom={menu.bottom}
+      />
+    {/if}
   </SvelteFlow>
   <SideBar />
 </div>

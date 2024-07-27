@@ -37,7 +37,8 @@
     projects.update((p) => {
       let project = p.find((p) => p.name === $selectedProject);
       if (project) {
-        project.shaderFiles.push(new Shader("_.frag", ""));
+        const name = prompt("Shader name") ?? "_.frag";
+        project.shaderFiles.push(new Shader(name, ""));
       }
       return p;
     });

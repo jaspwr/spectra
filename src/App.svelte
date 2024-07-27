@@ -1,12 +1,13 @@
 <script lang="ts">
   import PipelineEditor from "./lib/PipelineEditor.svelte";
-  import { projects, selectedProject, type Project } from "./project";
+  import { projects, selectedProject, serialize, type Project } from "./project";
 
   import CodeEditor from "./lib/CodeEditor.svelte";
   import ErrorList from "./lib/ErrorList.svelte";
   import FileTree from "./lib/FileTree.svelte";
   import GlWindow from "./lib/GlWindow.svelte";
   import Goals from "./lib/Goals.svelte";
+  import { SvelteFlowProvider } from "@xyflow/svelte";
 
   let _selected = $selectedProject;
   $: selectedProject.set(_selected);
@@ -27,15 +28,27 @@
     errors = errs;
   };
 
+  let forcingRerender = false;
+
+  const forceRerender = () => {
+    forcingRerender = true;
+    setTimeout(() => {
+      forcingRerender = false;
+    }, 10);
+  };
+
   let preProjectName = "";
   $: if (preProjectName !== _selected) {
     preProjectName = _selected;
     recompile();
+    forceRerender();
   }
 
-  $: console.log(errors);
-
   recompile();
+
+  const save = () => {
+    console.log(project !== undefined && serialize(project));
+  }
 </script>
 
 <div class="layout">
@@ -51,6 +64,8 @@
     <input type="checkbox" bind:checked={editorVimMode} />
 
     <button on:click={recompile}>Recompile</button>
+
+    <button on:click={save}>Save</button>
   </div>
   <div class="gl-window">
     <div class:hide={errors.length > 0} class="gl-container">
@@ -64,7 +79,14 @@
     <CodeEditor vimMode={editorVimMode} />
   </div>
   <div class="pipeline-editor">
-    <PipelineEditor />
+    {#if project !== undefined && !forcingRerender}
+      <SvelteFlowProvider>
+        <PipelineEditor
+          nodes={project.pipelineGraph.nodes}
+          edges={project.pipelineGraph.edges}
+        />
+      </SvelteFlowProvider>
+    {/if}
   </div>
 
   <div class="sidebar">

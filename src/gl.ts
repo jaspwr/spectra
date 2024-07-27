@@ -1,75 +1,8 @@
 import type { Project } from "./project";
 import { Shader, ShaderType } from "./shader";
-import { hashString } from "./utils";
+import { hashString, type Model } from "./utils";
 
-export class PipeLine {
-  private steps: RenderStep[] = [];
-
-  /**
-   * @throws {string[]} An array of errors in the shaders and render pipeline
-   */
-  public constructor(project: Project, gl: WebGLRenderingContext) {
-    const vsSource = `
-    #version 100
-
-    attribute vec4 aVertexPosition;
-    void main(void) {
-        gl_Position = aVertexPosition;
-    }
-`;
-
-    const fsSource = `
-    #version 100
-
-    #ifdef GL_ES
-    precision highp float;
-    #endif
-
-    void main(void) {
-        gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
-    }
-`;
-
-    let errors: string[] = [];
-    // for (let shader of project.shaderFiles) {
-    //   try {
-    //     let _ = shader.compiled(gl);
-    //   } catch (e) {
-    //     let e_ = e as ShaderCompileError;
-    //     errors.push(`[${e_.filename}] ${e_.message}`);
-    //   }
-    // }
-
-    try {
-      const vs = new Shader("vs.vert", vsSource);
-      const fs = new Shader("fs.frag", fsSource);
-
-      const program = new GLProgram(gl, [vs, fs]);
-      const geometry = new Geometry(gl);
-      const step = new RenderStep(program, null, [geometry]);
-
-      this.steps.push(step);
-    } catch (e: any) {
-      if (e.filename !== undefined) {
-        errors.push(`[${e.filename}] ${e.message}`);
-      } else {
-        errors.push(e);
-      }
-    }
-
-    if (errors.length > 0) {
-      throw errors;
-    }
-  }
-
-  public render(gl: WebGLRenderingContext, deltaTime: number) {
-    for (let step of this.steps) {
-      step.render(gl, deltaTime);
-    }
-  }
-}
-
-class GLProgram {
+export class GLProgram {
   public readonly program: WebGLProgram;
   public readonly uniforms: Record<string, WebGLUniformLocation>;
   public readonly uniformTypes: Record<string, string>;
@@ -89,8 +22,10 @@ class GLProgram {
     let uniforms: Record<string, WebGLUniformLocation> = {};
     let uniformTypes: Record<string, string> = {};
 
+    console.log(shaders);
     for (let shader of shaders) {
       for (let uniform of shader.data.uniforms) {
+        console.log(uniform.name);
         uniforms[uniform.name] = gl.getUniformLocation(
           this.program,
           uniform.name
@@ -104,19 +39,22 @@ class GLProgram {
   }
 }
 
-class RenderStep {
+export class RenderStep {
   program: GLProgram;
   framebuffer: WebGLFramebuffer | null;
   geometry: Geometry[];
+  uniformSetters: UniformSetter[];
 
   public constructor(
     program: GLProgram,
     framebuffer: WebGLFramebuffer | null,
-    geometry: Geometry[]
+    geometry: Geometry[],
+    uniformSetters: UniformSetter[]
   ) {
     this.program = program;
     this.framebuffer = framebuffer;
     this.geometry = geometry;
+    this.uniformSetters = uniformSetters;
   }
 
   public render(gl: WebGLRenderingContext, deltaTime: number) {
@@ -125,6 +63,11 @@ class RenderStep {
     }
 
     gl.useProgram(this.program.program);
+
+    for (let setter of this.uniformSetters) {
+      setter.set(gl, this.program);
+    }
+
     for (let geometry of this.geometry) {
       geometry.render(gl, this.program.program);
     }
@@ -133,11 +76,75 @@ class RenderStep {
   }
 }
 
-class Geometry {
+export interface UniformSetter {
+  set(gl: WebGLRenderingContext, program: GLProgram): void;
+}
+
+class UniformSetterFloat implements UniformSetter {
+  protected name: string;
+  protected value: number;
+
+  public constructor(name: string, value: number) {
+    this.name = name;
+    this.value = value;
+  }
+
+  public set(gl: WebGLRenderingContext, program: GLProgram) {
+    gl.uniform1f(program.uniforms[this.name], this.value);
+  }
+}
+
+export class UniformTimeSetter extends UniformSetterFloat {
+  public constructor(name: string) {
+    super(name, 0);
+  }
+
+  public set(gl: WebGLRenderingContext, program: GLProgram) {
+    this.value += 0.01;
+    gl.uniform1f(program.uniforms[this.name], this.value);
+  }
+}
+
+interface Geometry {
+  render(gl: WebGLRenderingContext, program: WebGLProgram): void;
+}
+
+export class Mesh implements Geometry {
+  vertices: WebGLBuffer;
+  normals: WebGLBuffer;
+  uv: WebGLBuffer;
+  vertexCount: number;
+
+  public constructor(gl: WebGLRenderingContext, model: Model) {
+    let verticesFlat: number[] = [];
+    let normalsFlat: number[] = [];
+    let uvFlat: number[] = [];
+
+    for (let face of model.faces) {
+      for (let { vertexIndex, uvIndex, normalIndex } of face.points) {
+        verticesFlat.push(...model.vertices[vertexIndex]);
+        normalsFlat.push(...model.normals[uvIndex]);
+        uvFlat.push(...model.uv[normalIndex]);
+      }
+    }
+
+    this.vertices = createVBO(gl, verticesFlat);
+    this.normals = createVBO(gl, normalsFlat);
+    this.uv = createVBO(gl, uvFlat);
+
+    this.vertexCount = model.faces.length * 3;
+  }
+
+  public render(gl: WebGLRenderingContext, program: WebGLProgram) {}
+}
+
+export class FullscreenQuad implements Geometry {
   vbo: WebGLBuffer;
 
   public constructor(gl: WebGLRenderingContext) {
-    const vertices = new Float32Array([1.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0]);
+    const vertices = new Float32Array([
+      1.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0,
+    ]);
 
     this.vbo = gl.createBuffer()!;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
@@ -154,6 +161,13 @@ class Geometry {
 
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
   }
+}
+
+function createVBO(gl: WebGLRenderingContext, data: number[]): WebGLBuffer {
+  const vbo = gl.createBuffer()!;
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  gl.bufferData(gl.ARRAY_BUFFER, Float32Array.from(data), gl.STATIC_DRAW);
+  return vbo;
 }
 
 interface ShaderCompileError {
@@ -198,7 +212,7 @@ export function compileShader(
   return shader;
 }
 
-function createFramebuffer(
+export function createFramebuffer(
   gl: WebGLRenderingContext,
   height: number,
   width: number

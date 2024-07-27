@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { PipeLine } from "../gl";
+  import { PipeLine } from "../pipeline";
   import type { Project } from "../project";
 
   export let project: Project | null;

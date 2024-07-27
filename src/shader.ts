@@ -1,4 +1,5 @@
 import { compileShader } from "./gl";
+import { deserialize } from "./project";
 import { hashString } from "./utils";
 
 export enum ShaderType {
@@ -31,12 +32,19 @@ export class Shader {
   public compiled(gl: WebGLRenderingContext): WebGLShader {
     const currentSourceHash = hashString(this._contents);
 
-    if (this._lastCompiledHash !== currentSourceHash) {
+    if (
+      this._compiled === null ||
+      this._lastCompiledHash !== currentSourceHash
+    ) {
       this._compiled = compileShader(gl, this);
       this._lastCompiledHash = currentSourceHash;
     }
 
     return this._compiled!;
+  }
+
+  public deleteCompilation() {
+    this._compiled = null;
   }
 
   public updateFilename(filename: string) {
@@ -86,7 +94,7 @@ export class Shader {
     let uniforms: Uniform[] = [];
     let lines = this.contents.split("\n");
     for (let line of lines) {
-      let tokens = line.split(" ");
+      let tokens = line.split(" ").filter((t) => t !== "");
       if (tokens.length < 3 || tokens[0] !== "uniform") continue;
       let type = tokens[1];
       let name = tokens[2].split(";")[0];
@@ -95,6 +103,22 @@ export class Shader {
 
     return { type, uniforms };
   }
+
+  public serialize(): SerializedShader {
+    return {
+      filename: this._filename,
+      contents: this._contents,
+    };
+  }
+}
+
+export interface SerializedShader {
+  filename: string;
+  contents: string;
+}
+
+export function deserializeShader(s: SerializedShader) {
+  return new Shader(s.filename, s.contents);
 }
 
 interface ShaderData {

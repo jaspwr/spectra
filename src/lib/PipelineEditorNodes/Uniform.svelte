@@ -8,16 +8,18 @@
 
   $: project = $projects.find((p) => p.name === $selectedProject);
 
-  export let data: { type: string, modelSrc: string } = {
-    type: "Screen Quad",
-    modelSrc: "",
+  export let data = {
+    type: "Time",
+    float1: 0,
+    float2: 0,
+    textureSrc: "",
   };
 
   if (data.type === undefined) {
-    data.type = "Screen Quad";
+    data.type = "Time";
   }
 
-  const types = ["Screen Quad", "Model"];
+  const types = ["Time", "float", "vec2", "texture"];
 </script>
 
 <div class="shader">
@@ -27,10 +29,17 @@
         <option>{type}</option>
       {/each}
     </select>
+
     <div>
-      {#if data.type === "Model"}
+      {#if data.type === "float"}
+        <input type="number" bind:value={data.float1} />
+      {:else if data.type === "vec2"}
+        <input type="number" bind:value={data.float1} />
+        <input type="number" bind:value={data.float2} />
+      {:else if data.type === "texture"}
         src:
-        <input type="text" bind:value={data.modelSrc} />
+        <input type="text" bind:value={data.textureSrc} />
+        <img src={data.textureSrc} alt="Texture preview" width="100px" />
       {/if}
     </div>
   </div>
@@ -50,5 +59,9 @@
   .label {
     position: absolute;
     font-size: 10px;
+  }
+
+  input {
+    width: 60px;
   }
 </style>

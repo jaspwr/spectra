@@ -8,17 +8,15 @@
 
   $: project = $projects.find((p) => p.name === $selectedProject);
 
-  export let data: { shaderId: Writable<number> } = {
-    shaderId: writable(0),
+  export let data: { shaderId: number } = {
+    shaderId: 0,
   };
 
   if (data.shaderId === undefined) {
-    data.shaderId = writable(0);
+    data.shaderId = 0;
   }
 
-  const { shaderId } = data;
-
-  $: shader = project?.shaderFiles.find((s) => s.uid === $shaderId);
+  $: shader = project?.shaderFiles.find((s) => s.uid === data.shaderId);
 </script>
 
 <div
@@ -26,8 +24,8 @@
   style="height: {(shader?.data?.uniforms?.length ?? 0) * 16.3 + 30}px"
 >
   <div>
-    {#if $shaderId !== undefined}
-      <select bind:value={$shaderId}>
+    {#if data.shaderId !== undefined}
+      <select bind:value={data.shaderId}>
         {#each project?.shaderFiles ?? [] as shader}
           <option value={shader.uid}>{shader.filename}</option>
         {/each}
