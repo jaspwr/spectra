@@ -32,9 +32,42 @@
   onMount(async () => {
     monaco = (await import("../monaco")).default;
 
-    editor = monaco.editor.create(editorContainer, {
-      theme: "vs-dark",
-    });
+    editor = monaco.editor.create(
+      editorContainer,
+      {
+        theme: "glsl-theme",
+
+        cursorBlinking: "smooth",
+
+        colorDecorators: true,
+
+        minimap: {
+          enabled: false,
+        },
+
+        suggest: {
+          showInlineDetails: true,
+          snippetsPreventQuickSuggestions: false,
+        },
+
+        "semanticHighlighting.enabled": true,
+      },
+      {
+        storageService: {
+          get() {},
+          remove() {},
+          getBoolean(key: string) {
+            if (key === "expandSuggestionDocs") return true;
+          },
+          getNumber(key: string) {},
+          store() {},
+          onWillSaveState() {},
+          onDidChangeStorage() {},
+          onDidChangeValue() {},
+        },
+      },
+    );
+
     const model = monaco.editor.createModel("", "glsl");
     editor.setModel(model);
 

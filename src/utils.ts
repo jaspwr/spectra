@@ -1,3 +1,5 @@
+import { type Writable, writable } from "svelte/store";
+
 export function hashString(str: string): number {
   var hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -74,3 +76,5 @@ export function filterNonDigits(word: string): string {
     .filter((c) => "0123456789".includes(c))
     .join("");
 }
+
+export const GL_ERRORS: Writable<string[]> = writable([]);

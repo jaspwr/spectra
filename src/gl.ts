@@ -1,7 +1,7 @@
-import { Camera } from "./camera";
+import { Projection, View } from "./camera";
 import type { Project } from "./project";
 import { Shader, ShaderType } from "./shader";
-import { hashString, mat4_I, type Mat4, type Model } from "./utils";
+import { hashString, mat4_0, mat4_I, type Mat4, type Model, type Vec3 } from "./utils";
 
 export const WINDOW_ASPECT: { value: number } = { value: 1 };
 
@@ -54,8 +54,6 @@ export class GLProgram {
   }
 }
 
-let camera = new Camera();
-
 export class RenderStep {
   program: GLProgram;
   framebuffer: WebGLFramebuffer | null;
@@ -77,6 +75,7 @@ export class RenderStep {
   public render(gl: WebGLRenderingContext, deltaTime: number) {
     if (this.framebuffer !== null) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     }
 
     gl.useProgram(this.program.program);
@@ -85,23 +84,10 @@ export class RenderStep {
       setter.set(gl, this.program);
     }
 
-    if (this.program.uniforms["projection"] !== undefined) {
-      gl.uniformMatrix4fv(
-        this.program.uniforms["projection"],
-        false,
-        camera.projection
-      );
-    }
-
-    if (this.program.uniforms["view"] !== undefined) {
-      gl.uniformMatrix4fv(this.program.uniforms["view"], false, camera.view);
-    }
-
-    if (this.program.uniforms["model"] !== undefined) {
-      gl.uniformMatrix4fv(this.program.uniforms["model"], false, mat4_I());
-    }
-
     for (let geometry of this.geometry) {
+      for (let override of geometry.uniformOverrides) {
+        override.set(gl, this.program);
+      }
       geometry.render(gl, this.program);
     }
 
@@ -113,7 +99,7 @@ export interface UniformSetter {
   set(gl: WebGLRenderingContext, program: GLProgram): void;
 }
 
-class UniformSetterFloat implements UniformSetter {
+export class UniformFloatSetter implements UniformSetter {
   protected name: string;
   protected value: number;
 
@@ -127,7 +113,7 @@ class UniformSetterFloat implements UniformSetter {
   }
 }
 
-export class UniformTimeSetter extends UniformSetterFloat {
+export class UniformTimeSetter extends UniformFloatSetter {
   public constructor(name: string) {
     super(name, 0);
   }
@@ -138,9 +124,29 @@ export class UniformTimeSetter extends UniformSetterFloat {
   }
 }
 
+export class UniformTextureSetter implements UniformSetter {
+  protected name: string;
+  protected texture: WebGLTexture;
+
+  public constructor(name: string, texture: WebGLTexture) {
+    this.name = name;
+    this.texture = texture;
+  }
+
+  public set(gl: WebGLRenderingContext, program: GLProgram) {
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.uniform1i(program.uniforms[this.name], 0);
+  }
+}
+
 export class UniformMat4Setter implements UniformSetter {
   protected name: string;
   protected value: Mat4;
+
+  protected getValue() {
+    return this.value;
+  }
 
   public constructor(name: string, value: Mat4) {
     this.name = name;
@@ -155,22 +161,86 @@ export class UniformMat4Setter implements UniformSetter {
     gl.uniformMatrix4fv(
       program.uniforms[this.name],
       false,
-      new Float32Array(this.value)
+      new Float32Array(this.getValue())
     );
   }
 }
 
-interface Geometry {
-  render(gl: WebGLRenderingContext, program: GLProgram): void;
+export class UniformTranslationSetter extends UniformMat4Setter {
+  public constructor(name: string, translation: Vec3) {
+    super(name, mat4_I());
+    this.update(translation);
+  }
+
+  public update(translation: Vec3) {
+    this.value[12] = translation[0];
+    this.value[13] = translation[1];
+    this.value[14] = translation[2];
+  }
 }
 
-export class Mesh implements Geometry {
+export class UniformProjectionSetter extends UniformMat4Setter {
+  private projection: Projection;
+
+  public constructor(name: string, fov: number, far: number, near: number) {
+    super(name, mat4_0());
+
+    this.projection = new Projection();
+    this.projection.update(p => {
+      p.fov = fov;
+      p.far = far;
+      p.near = near;
+      return p;
+    });
+  }
+
+  protected override getValue() {
+    return this.projection.value;
+  }
+}
+
+export class UniformViewSetter extends UniformMat4Setter {
+  private view: View;
+
+  public constructor(
+    name: string,
+    position: Vec3,
+    target: Vec3,
+    up: Vec3
+  ) {
+    super(name, mat4_0());
+
+    this.view = new View();
+    this.view.update(v => {
+      v.position = position;
+      v.target = target;
+      v.up = up;
+      return v;
+    });
+  }
+
+  protected override getValue() {
+    return this.view.value;
+  }
+}
+
+export abstract class Geometry {
+  public uniformOverrides: UniformSetter[];
+  abstract render(gl: WebGLRenderingContext, program: GLProgram): void;
+
+  constructor(uniformOverrides: UniformSetter[]) {
+    this.uniformOverrides = uniformOverrides;
+  }
+}
+
+export class Mesh extends Geometry {
   vertices: WebGLBuffer;
   normals: WebGLBuffer;
   uv: WebGLBuffer;
   vertexCount: number;
 
-  public constructor(gl: WebGLRenderingContext, model: Model) {
+  public constructor(gl: WebGLRenderingContext, model: Model, uniformOverrides: UniformSetter[]) {
+    super(uniformOverrides);
     let verticesFlat: number[] = [];
     let normalsFlat: number[] = [];
     let uvFlat: number[] = [];
@@ -199,10 +269,12 @@ export class Mesh implements Geometry {
   }
 }
 
-export class FullscreenQuad implements Geometry {
+export class FullscreenQuad extends Geometry {
   vbo: WebGLBuffer;
 
-  public constructor(gl: WebGLRenderingContext) {
+  public constructor(gl: WebGLRenderingContext, uniformOverrides: UniformSetter[]) {
+    super(uniformOverrides);
+
     const vertices = new Float32Array([
       1.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0,
     ]);
@@ -289,51 +361,65 @@ export function compileShader(
   return shader;
 }
 
-export function createFramebuffer(
-  gl: WebGLRenderingContext,
-  height: number,
-  width: number
-): WebGLFramebuffer {
-  const framebuffer = gl.createFramebuffer();
-  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
 
-  const texture = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.texImage2D(
-    gl.TEXTURE_2D,
-    0,
-    gl.RGBA,
-    width,
-    height,
-    0,
-    gl.RGBA,
-    gl.UNSIGNED_BYTE,
-    null
-  );
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+export class FrameBufferTexture {
+  public readonly framebuffer: WebGLFramebuffer;
+  public readonly texture: WebGLTexture
 
-  gl.framebufferTexture2D(
-    gl.FRAMEBUFFER,
-    gl.COLOR_ATTACHMENT0,
-    gl.TEXTURE_2D,
-    texture,
-    0
-  );
+  public constructor(
+    gl: WebGLRenderingContext,
+    height: number,
+    width: number
+  ) {
+    const texture = gl.createTexture();
 
-  if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
-    console.error("Framebuffer is not complete");
+    if (texture === null) {
+      throw new Error("Failed to create texture");
+    }
+
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      width,
+      height,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      null
+    );
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    const framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      texture,
+      0
+    );
+
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+      console.error("Framebuffer is not complete");
+    }
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    if (framebuffer === null) {
+      throw new Error("Failed to create framebuffer");
+    }
+
+    this.framebuffer = framebuffer;
+    this.texture = texture;
   }
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-  if (framebuffer === null) {
-    throw new Error("Failed to create framebuffer");
-  }
-
-  return framebuffer;
 }
 
-function loadImageTexture(gl: WebGLRenderingContext, url: string) {
+export function loadImageTexture(gl: WebGLRenderingContext, url: string) {
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -351,10 +437,15 @@ function loadImageTexture(gl: WebGLRenderingContext, url: string) {
 
   const image = new Image();
   image.src = url;
-  image.addEventListener("load", function () {
+  image.addEventListener("load", function() {
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-    gl.generateMipmap(gl.TEXTURE_2D);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+    // gl.generateMipmap(gl.TEXTURE_2D);
   });
 
   return texture;

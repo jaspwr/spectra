@@ -5,19 +5,11 @@
   import { WINDOW_ASPECT } from "../gl";
 
   export let project: Project | null;
-  export let setErrors: (errors: string[]) => void;
 
   let pipeline: PipeLine | null = null;
 
   $: if (project !== null && gl !== null) {
-    try {
-      pipeline = new PipeLine(project, gl);
-      setErrors([]);
-      console.log(pipeline);
-    } catch (e) {
-      let errors = e as string[];
-      setErrors(errors);
-    }
+    pipeline = new PipeLine(project, gl);
   }
 
   let canv: HTMLCanvasElement;

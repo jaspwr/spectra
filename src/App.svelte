@@ -1,6 +1,12 @@
 <script lang="ts">
-  import PipelineEditor from "./lib/PipelineEditor.svelte";
-  import { projects, selectedProject, serialize, type Project } from "./project";
+  import PipelineEditor from "./lib/PipelineEditor/PipelineEditor.svelte";
+  import {
+    projects,
+    selectedProject,
+    serialize,
+    type Project,
+  } from "./project";
+  import { GL_ERRORS } from "./utils";
 
   import CodeEditor from "./lib/CodeEditor.svelte";
   import ErrorList from "./lib/ErrorList.svelte";
@@ -13,19 +19,15 @@
   $: selectedProject.set(_selected);
 
   let editorVimMode = false;
-  let errors: string[] = [];
 
   $: project = $projects.find((p) => p.name === $selectedProject);
   let displayingProject: Project | null = null;
 
   const recompile = () => {
+    GL_ERRORS.set([]);
     projects.update((p) => p);
     if (project === undefined) return;
     displayingProject = project;
-  };
-
-  const setErrors = (errs: string[]) => {
-    errors = errs;
   };
 
   let forcingRerender = false;
@@ -48,7 +50,7 @@
 
   const save = () => {
     console.log(project !== undefined && serialize(project));
-  }
+  };
 </script>
 
 <div class="layout">
@@ -68,11 +70,11 @@
     <button on:click={save}>Save</button>
   </div>
   <div class="gl-window">
-    <div class:hide={errors.length > 0} class="gl-container">
-      <GlWindow project={displayingProject} {setErrors} />
+    <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
+      <GlWindow project={displayingProject} />
     </div>
-    {#if errors.length > 0}
-      <ErrorList {errors} />
+    {#if $GL_ERRORS.length > 0}
+      <ErrorList errors={$GL_ERRORS} />
     {/if}
   </div>
   <div class="code-editor">
