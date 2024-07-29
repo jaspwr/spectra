@@ -41,6 +41,7 @@
 
   let preProjectName = "";
   $: if (preProjectName !== _selected) {
+    document.title = _selected;
     preProjectName = _selected;
     recompile();
     forceRerender();
