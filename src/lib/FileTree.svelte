@@ -80,11 +80,16 @@
   }
 
   li {
-    padding: 0.5em;
+    padding: 0.1em;
   }
 
   li.selected {
-    background-color: #f0f0f0;
+    background-color: var(--text-sec);
+  }
+
+
+  li.selected button {
+    color: var(--bg-prim);
   }
 
   li button {

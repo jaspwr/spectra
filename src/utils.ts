@@ -78,3 +78,9 @@ export function filterNonDigits(word: string): string {
 }
 
 export const GL_ERRORS: Writable<string[]> = writable([]);
+export const FPS: Writable<number> = writable(0);
+export const PLAYING: Writable<boolean> = writable(false);
+
+export function roundToNearestMultipleOf(n: number, multiple: number): number {
+  return Math.round(n / multiple) * multiple;
+}

@@ -56,13 +56,13 @@ export class GLProgram {
 
 export class RenderStep {
   program: GLProgram;
-  framebuffer: WebGLFramebuffer | null;
+  framebuffer: FrameBufferTexture | null;
   geometry: Geometry[];
   uniformSetters: UniformSetter[];
 
   public constructor(
     program: GLProgram,
-    framebuffer: WebGLFramebuffer | null,
+    framebuffer: FrameBufferTexture | null,
     geometry: Geometry[],
     uniformSetters: UniformSetter[]
   ) {
@@ -74,8 +74,14 @@ export class RenderStep {
 
   public render(gl: WebGLRenderingContext, deltaTime: number) {
     if (this.framebuffer !== null) {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      this.framebuffer.resize(gl, gl.canvas.height, gl.canvas.width);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer.framebuffer);
+      gl.viewport(0, 0, this.framebuffer.width, this.framebuffer.height);
+      if (this.framebuffer.isDepthMap) {
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+      } else {
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      }
     }
 
     gl.useProgram(this.program.program);
@@ -91,7 +97,10 @@ export class RenderStep {
       geometry.render(gl, this.program);
     }
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    if (this.framebuffer !== null) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    }
   }
 }
 
@@ -127,16 +136,20 @@ export class UniformTimeSetter extends UniformFloatSetter {
 export class UniformTextureSetter implements UniformSetter {
   protected name: string;
   protected texture: WebGLTexture;
+  private textureUnit: number;
 
-  public constructor(name: string, texture: WebGLTexture) {
+  public constructor(name: string, texture: WebGLTexture, textureUnit: number) {
     this.name = name;
     this.texture = texture;
+    this.textureUnit = textureUnit;
+    console.log(name, texture, textureUnit);
   }
 
   public set(gl: WebGLRenderingContext, program: GLProgram) {
-    gl.activeTexture(gl.TEXTURE0);
+    const unit: GLenum = gl.TEXTURE0 + this.textureUnit;
+    gl.activeTexture(unit);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
-    gl.uniform1i(program.uniforms[this.name], 0);
+    gl.uniform1i(program.uniforms[this.name], this.textureUnit);
   }
 }
 
@@ -363,59 +376,114 @@ export function compileShader(
 
 
 export class FrameBufferTexture {
-  public readonly framebuffer: WebGLFramebuffer;
-  public readonly texture: WebGLTexture
+  public framebuffer: WebGLFramebuffer;
+  public texture: WebGLTexture;
+
+  private renderBuffer: WebGLRenderbuffer;
+  public readonly isDepthMap: boolean;
+
+  public height: number = 0;
+  public width: number = 0;
 
   public constructor(
     gl: WebGLRenderingContext,
     height: number,
-    width: number
+    width: number,
+    isDepthMap: boolean = false
   ) {
+    this.isDepthMap = isDepthMap;
+    [this.framebuffer, this.texture, this.renderBuffer] = this.createNew(gl, height, width, isDepthMap);
+    this.height = height;
+    this.width = width;
+  }
+
+  public resize(gl: WebGLRenderingContext, height: number, width: number) {
+    if (height === this.height && width === this.width) {
+      return;
+    }
+
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      this.isDepthMap ? gl.DEPTH_COMPONENT : gl.RGBA,
+      width,
+      height,
+      0,
+      this.isDepthMap ? gl.DEPTH_COMPONENT : gl.RGBA,
+      this.isDepthMap ? gl.UNSIGNED_INT : gl.UNSIGNED_BYTE,
+      null
+    );
+
+    if (!this.isDepthMap) {
+      gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBuffer);
+      gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+    }
+
+    this.height = height;
+    this.width = width;
+  }
+
+  private createNew(gl: WebGLRenderingContext, height: number, width: number, isDepthMap: boolean): [WebGLFramebuffer, WebGLTexture, WebGLRenderbuffer] {
     const texture = gl.createTexture();
 
     if (texture === null) {
       throw new Error("Failed to create texture");
     }
 
+    const framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
-      gl.RGBA,
+      isDepthMap ? gl.DEPTH_COMPONENT : gl.RGBA,
       width,
       height,
       0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
+      isDepthMap ? gl.DEPTH_COMPONENT : gl.RGBA,
+      isDepthMap ? gl.UNSIGNED_INT : gl.UNSIGNED_BYTE,
       null
     );
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-    const framebuffer = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+    // Create a renderbuffer for the depth buffer
+    const renderbuffer = gl.createRenderbuffer();
+
+    if (!isDepthMap) {
+      gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+      gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+    }
 
     gl.framebufferTexture2D(
       gl.FRAMEBUFFER,
-      gl.COLOR_ATTACHMENT0,
+      isDepthMap ? gl.DEPTH_ATTACHMENT : gl.COLOR_ATTACHMENT0,
       gl.TEXTURE_2D,
       texture,
       0
     );
 
+    if (!isDepthMap) {
+      gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
+    }
+
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
       console.error("Framebuffer is not complete");
     }
 
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    if (framebuffer === null) {
+    if (framebuffer === null || renderbuffer === null) {
       throw new Error("Failed to create framebuffer");
     }
 
-    this.framebuffer = framebuffer;
-    this.texture = texture;
+    return [framebuffer, texture, renderbuffer];
   }
 }
 

@@ -52,8 +52,6 @@ function parseOBJ(obj: string): Model {
     }
   }
 
-  console.log(faces);
-
   faces = faces.flatMap(intoTriangles);
 
   return { vertices, normals, uv, faces };

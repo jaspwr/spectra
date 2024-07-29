@@ -3,6 +3,7 @@
   import { PipeLine } from "../pipeline";
   import type { Project } from "../project";
   import { WINDOW_ASPECT } from "../gl";
+  import { FPS } from "../utils";
 
   export let project: Project | null;
 
@@ -18,12 +19,22 @@
 
   let lastTime = 0;
 
+  let frameTimeSum = 0;
+  let frameSumSamples = 0;
+  let FPS_INTEGRATION_TIME = 30; // frames
+
   function loop(currentTime: DOMHighResTimeStamp) {
     if (pipeline !== null && gl !== null) {
-      currentTime *= 0.001;
-
       const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
+
+      frameTimeSum += deltaTime;
+      frameSumSamples += 1;
+      if (frameSumSamples >= FPS_INTEGRATION_TIME) {
+        FPS.set(1000 / (frameTimeSum / frameSumSamples));
+        frameTimeSum = 0;
+        frameSumSamples = 0;
+      }
 
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -56,6 +67,11 @@
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
+
+    const ext = gl.getExtension("WEBGL_depth_texture");
+    if (!ext) {
+      return alert("WEBGL_depth_texture not supported. Try another browser.");
+    }
 
     resize();
 

@@ -116,6 +116,8 @@ function getUniformSetters(
   textures: Record<string, WebGLTexture>,
   framebuffers: Record<string, FrameBufferTexture>
 ): UniformSetter[] {
+  let textureUnitCounter = 0;
+
   return es
     .filter((e) => e.target === self.id)
     .map((e) => {
@@ -128,7 +130,7 @@ function getUniformSetters(
             case UniformNodeType.Time:
               return new UniformTimeSetter(uniformName);
             case UniformNodeType.Tex:
-              return new UniformTextureSetter(uniformName, textures[uniformNode.data.textureSrc as string]);
+              return new UniformTextureSetter(uniformName, textures[uniformNode.data.textureSrc as string], textureUnitCounter++);
             case UniformNodeType.Float:
               return new UniformFloatSetter(uniformName, (uniformNode.data.value ?? 0) as number);
             case UniformNodeType.ViewMatrix: {
@@ -156,7 +158,7 @@ function getUniformSetters(
           if (framebuftex === undefined) {
             throw new Error("Invalid framebuffer.");
           }
-          return new UniformTextureSetter(uniformName, framebuftex.texture);
+          return new UniformTextureSetter(uniformName, framebuftex.texture, textureUnitCounter++);
         default:
           throw new Error("Unsupported uniform type");
       }
@@ -169,7 +171,7 @@ function createFramebuffers(
   gl: WebGLRenderingContext
 ): Record<string, FrameBufferTexture> {
   return ns.filter((n) => n.type === "framebuffer")
-    .map((n) => [n.id, new FrameBufferTexture(gl, 100, 100)] as [string, FrameBufferTexture])
+    .map((n) => [n.id, new FrameBufferTexture(gl, 1000, 100, n.data.isDepthMap as boolean)] as [string, FrameBufferTexture])
     .reduce((acc, [id, fb]) => {
       acc[id] = fb;
       return acc;
@@ -211,12 +213,12 @@ async function createRenderStep(
     throw new Error("No valid output for GL program");
   }
 
-  let output: WebGLFramebuffer | null;
+  let output: FrameBufferTexture | null;
 
   if (outputNode.type === "window") {
     output = null;
   } else if (outputNode.type === "framebuffer") {
-    output = framebuffers[outputNode.id].framebuffer;
+    output = framebuffers[outputNode.id];
     if (output === undefined) {
       throw new Error("Framebuffer not found");
     }

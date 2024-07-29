@@ -32,8 +32,11 @@
   }
 </script>
 
-<div class="shader">
+<div class="uniform">
   <div>
+    <div>
+      <strong>Uniform</strong>
+    </div>
     <select bind:value={data.type}>
       {#each types as type}
         <option>{type}</option>
@@ -75,11 +78,7 @@
 </div>
 
 <style>
-  .shader {
-    padding: 10px;
-    border: 1px solid black;
-    border-radius: 5px;
-    background-color: #fff;
+  .uniform {
     width: 140px;
   }
 

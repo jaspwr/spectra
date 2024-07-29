@@ -28,7 +28,10 @@
   const types = ["Screen Quad", "Model"];
 </script>
 
-<div class="shader">
+<div>
+  <div>
+    <strong>Geometry</strong>
+  </div>
   <div>
     <select bind:value={data.type}>
       {#each types as type}
@@ -84,12 +87,10 @@
     height: 15px;
   }
 
-  .shader {
-    padding: 10px;
-    border: 1px solid black;
-    border-radius: 5px;
-    background-color: #fff;
-    width: 140px;
+  button {
+    padding: 0;
+    font-size: 12px;
+    min-width: 15px !important;
   }
 
   .small {

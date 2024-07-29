@@ -20,8 +20,12 @@
 
 <div
   class="shader"
-  style="height: {(shader?.data?.uniforms?.length ?? 0) * 16.3 + 30}px"
+  style="height: {(shader?.data?.uniforms?.length ?? 0) * 16.3 + 50}px"
 >
+
+  <div>
+    <strong>Shader</strong>
+  </div>
   <div>
     {#if data.shaderId !== undefined}
       <select bind:value={data.shaderId}>
@@ -36,10 +40,10 @@
     <Handle
       type="target"
       position={Position.Left}
-      style="top:{i * 16.3 + 34}px;"
+      style="top:{i * 16.3 + 55}px;"
       id={uniform.name}
     />
-    <div class="label" style="top:{i * 16.3 + 30}px;">
+    <div class="label" style="top:{i * 16.3 + 50}px;">
       <strong>{uniform.name}</strong>
       <span>{uniform.type}</span>
     </div>
@@ -49,10 +53,6 @@
 
 <style>
   .shader {
-    padding: 10px;
-    border: 1px solid black;
-    border-radius: 5px;
-    background-color: #fff;
     width: 200px;
   }
 

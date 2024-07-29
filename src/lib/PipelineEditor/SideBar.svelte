@@ -8,14 +8,21 @@
     event.dataTransfer.effectAllowed = "move";
   };
 
-  const nodeTypes = ["shader", "gl-program", "window", "framebuffer", "uniform", "geometry"];
+  const nodeTypes = [
+    "shader",
+    "gl-program",
+    "window",
+    "framebuffer",
+    "uniform",
+    "geometry",
+  ];
 </script>
 
 <aside>
   <div class="nodes-container">
     {#each nodeTypes as nodeType}
       <div
-        class="node"
+        class="node svelte-flow__node"
         on:dragstart={(event) => onDragStart(event, nodeType)}
         draggable={true}
       >
@@ -27,7 +34,8 @@
 
 <style>
   aside {
-    background: #f4f4f4;
+    background: var(--bg-sec);
+    border-bottom: 1px solid var(--text-sec);
     font-size: 9px;
     display: flex;
     flex-direction: column;
@@ -42,11 +50,9 @@
   }
 
   .node {
-    margin: 0.2rem;
-    border: 1px solid #111;
-    padding: 0.2rem 0.4rem;
-    font-weight: 700;
-    border-radius: 3px;
+    position: relative !important;
+    padding: 0.3rem !important;
+    margin: 0.2rem !important;
     cursor: grab;
   }
 </style>

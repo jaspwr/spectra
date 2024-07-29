@@ -6,7 +6,7 @@
     serialize,
     type Project,
   } from "./project";
-  import { GL_ERRORS } from "./utils";
+  import { FPS, GL_ERRORS } from "./utils";
 
   import CodeEditor from "./lib/CodeEditor.svelte";
   import ErrorList from "./lib/ErrorList.svelte";
@@ -55,19 +55,25 @@
 
 <div class="layout">
   <div class="top-bar">
-    Project:
-    <select bind:value={_selected}>
-      {#each $projects as project}
-        <option>{project.name}</option>
-      {/each}
-    </select>
-
-    Vim Mode
-    <input type="checkbox" bind:checked={editorVimMode} />
-
-    <button on:click={recompile}>Recompile</button>
-
-    <button on:click={save}>Save</button>
+    <div class="top-bar-item" style="padding-left: 1rem">
+      FPS: <span class="fps">{Math.round($FPS * 100) / 100}</span>
+    </div>
+    <div class="top-bar-item">
+      <button on:click={recompile}>Recompile</button>
+      <button on:click={save}>Save</button>
+    </div>
+    <div class="top-bar-item">
+      Project:
+      <select bind:value={_selected}>
+        {#each $projects as project}
+          <option>{project.name}</option>
+        {/each}
+      </select>
+    </div>
+    <div class="top-bar-item checkbox-and-label">
+      <input type="checkbox" bind:checked={editorVimMode} />
+      Vim Mode
+    </div>
   </div>
   <div class="gl-window">
     <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
@@ -96,6 +102,7 @@
       <FileTree />
     </div>
     <div class="goals">
+      <hr/>
       <Goals />
     </div>
   </div>
@@ -135,6 +142,14 @@
 
   .top-bar {
     grid-area: top-bar;
+    display: flex;
+    align-items: center;
+  }
+
+  .top-bar-item {
+    margin-right: 20px;
+    border-right: 1px solid var(--text-sec);
+    padding-right: 20px;
   }
 
   .sidebar {
@@ -164,5 +179,10 @@
 
   .hide {
     display: none;
+  }
+
+  .fps {
+    display: inline-block;
+    min-width: 40px;
   }
 </style>

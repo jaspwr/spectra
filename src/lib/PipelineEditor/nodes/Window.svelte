@@ -13,10 +13,6 @@
 
 <style>
   .window {
-    padding: 10px;
-    border: 1px solid black;
-    border-radius: 5px;
-    background-color: #fff;
     width: 65px;
   }
 </style>

@@ -3,21 +3,23 @@
 
   type $$Props = NodeProps;
 
-  export let data: {};
+  export let data: {
+    isDepthMap: boolean;
+  };
 </script>
 
-<div class="framebuf">
+<div class="pipeline-node">
   <Handle type="target" position={Position.Left} id="in" />
   <strong>FrameBuf</strong>
+  <div class="checkbox-and-label">
+  <input type="checkbox" bind:checked={data.isDepthMap} />
+  <span class="small">Depth Map</span>
+    </div>
   <Handle type="source" position={Position.Right} id="out" />
 </div>
 
 <style>
-  .framebuf {
-    padding: 10px;
-    border: 1px solid black;
-    border-radius: 5px;
-    background-color: #fff;
-    width: 75px;
+  .small {
+    font-size: 11px;;
   }
 </style>
