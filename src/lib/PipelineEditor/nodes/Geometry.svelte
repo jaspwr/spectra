@@ -26,6 +26,8 @@
   }
 
   const types = ["Screen Quad", "Model"];
+
+  $: console.log(data.uniformOverrides);
 </script>
 
 <div>

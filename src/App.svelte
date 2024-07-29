@@ -61,8 +61,18 @@
       FPS: <span class="fps">{$FPS.toFixed(2)}</span>
     </div>
     <div class="top-bar-item">
-      <button on:click={recompile}>Recompile</button>
-      <button on:click={save}>Save</button>
+      <button on:click={recompile}>
+        <div class="button-contents">
+          <img class="icon" src="icons/cog.svg" alt="recompile" />
+          Recompile
+        </div>
+      </button>
+      <button on:click={save}>
+        <div class="button-contents">
+          <img class="icon" src="icons/floppy.svg" alt="save" />
+          Save
+        </div>
+      </button>
     </div>
     <div class="top-bar-item">
       Project:
@@ -104,7 +114,7 @@
       <FileTree />
     </div>
     <div class="goals">
-      <hr/>
+      <hr />
       <Goals />
     </div>
   </div>
@@ -186,5 +196,16 @@
   .fps {
     display: inline-block;
     min-width: 45px;
+  }
+
+  .icon {
+    height: 1.2em;
+  }
+
+  .button-contents {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    cursor: pointer;
   }
 </style>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { projects, selectedProject, type Project } from "../project";
-  import { Shader } from "../shader";
+  import { Shader, ShaderType } from "../shader";
 
   $: list =
     $projects.find((p) => p.name === $selectedProject)?.shaderFiles || [];
@@ -67,6 +67,13 @@
           selected?.set(shader.filename);
         }}
       >
+        <img
+          class="icon"
+          src={shader.data.type === ShaderType.Frag
+            ? "icons/file-fragment-shader.svg"
+            : "icons/file-vertex-shader.svg"}
+          alt="file"
+        />
         {shader.filename}
       </button>
     </li>
@@ -74,6 +81,17 @@
 </ul>
 
 <style>
+  .icon {
+    height: 1.2em;
+    margin-right: 0.5em;
+    position: relative;
+    top: 0.2em;
+  }
+
+  li.selected .icon {
+    filter: invert(1);
+  }
+
   ul {
     list-style-type: none;
     padding: 0;
