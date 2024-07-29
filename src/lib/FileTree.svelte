@@ -6,16 +6,16 @@
     $projects.find((p) => p.name === $selectedProject)?.shaderFiles || [];
 
   $: selected = $projects.find(
-    (p) => p.name === $selectedProject
+    (p) => p.name === $selectedProject,
   )?.selectedShaderFile;
 
   const removeSelectedFrom = (project: Project) => {
-    let index = project.shaderFiles.findIndex((s) => s.uid === $selected);
+    let index = project.shaderFiles.findIndex((s) => s.filename === $selected);
 
     if (index !== -1) {
       if (
         window.confirm(
-          `Are you sure you want to delete ${project.shaderFiles[index].filename}?`
+          `Are you sure you want to delete ${project.shaderFiles[index].filename}?`,
         ) === false
       ) {
         return;
@@ -24,9 +24,9 @@
       project.shaderFiles.splice(index, 1);
 
       selected?.set(
-        project.shaderFiles[index]?.uid ||
-          project.shaderFiles[index - 1]?.uid ||
-          -1
+        project.shaderFiles[index]?.filename ||
+          project.shaderFiles[index - 1]?.filename ||
+          "",
       );
     }
   };
@@ -61,10 +61,10 @@
 </button>
 <ul>
   {#each list as shader}
-    <li class:selected={shader.uid === $selected}>
+    <li class:selected={shader.filename === $selected}>
       <button
         on:click={() => {
-          selected?.set(shader.uid);
+          selected?.set(shader.filename);
         }}
       >
         {shader.filename}
@@ -86,7 +86,6 @@
   li.selected {
     background-color: var(--text-sec);
   }
-
 
   li.selected button {
     color: var(--bg-prim);

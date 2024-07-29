@@ -1,30 +1,27 @@
 <script lang="ts">
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
+    import InputHandleList from "../InputHandleList.svelte";
 
   type $$Props = NodeProps;
 
   export let data: {};
+
+  const handles: [string, string][] = [
+    ["vert", "Vert"],
+    ["frag", "Frag"],
+    ["geometry", "Geometry"],
+  ];
 </script>
 
 <div class="program">
   <strong>GL Program</strong>
-  <Handle type="target" position={Position.Left} style="top:37px;" id="vert" />
-  <div class="label" style="top:32px;">Vert</div>
-  <Handle type="target" position={Position.Left} style="top:52px;" id="frag" />
-  <div class="label" style="top:47px;">Frag</div>
-  <Handle type="target" position={Position.Left} style="top:66px;" id="geometry" />
-  <div class="label" style="top:62px;">Geometry</div>
+  <InputHandleList {handles} top={33} />
   <Handle type="source" position={Position.Right} />
 </div>
 
 <style>
   .program {
-    width: 100px;
-    height: 58px;
-  }
-
-  .label {
-    position: absolute;
-    font-size: 10px;
+    width: 110px;
+    height: 65px;
   }
 </style>

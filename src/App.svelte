@@ -49,14 +49,16 @@
   recompile();
 
   const save = () => {
-    console.log(project !== undefined && serialize(project));
+    if (project === undefined) return;
+    const serialized = serialize(project);
+    localStorage.setItem(project.name, serialized);
   };
 </script>
 
 <div class="layout">
   <div class="top-bar">
     <div class="top-bar-item" style="padding-left: 1rem">
-      FPS: <span class="fps">{Math.round($FPS * 100) / 100}</span>
+      FPS: <span class="fps">{$FPS.toFixed(2)}</span>
     </div>
     <div class="top-bar-item">
       <button on:click={recompile}>Recompile</button>
@@ -183,6 +185,6 @@
 
   .fps {
     display: inline-block;
-    min-width: 40px;
+    min-width: 45px;
   }
 </style>

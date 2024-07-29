@@ -246,8 +246,8 @@ async function createRenderStep(
   dependencies.push(...frag_.dependencies);
   uniformSetters.push(...frag_.uniformSetters);
 
-  const vs = shaders.find((s) => s.uid === vert.data.shaderId)!;
-  const fs = shaders.find((s) => s.uid === frag.data.shaderId)!;
+  const vs = shaders.find((s) => s.filename === vert.data.shaderSourceFileName)!;
+  const fs = shaders.find((s) => s.filename === frag.data.shaderSourceFileName)!;
 
   let geo: Geometry[] = [];
 

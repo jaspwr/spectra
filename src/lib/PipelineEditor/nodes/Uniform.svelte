@@ -43,7 +43,7 @@
       {/each}
     </select>
 
-    <div>
+    <div style="margin-top: 7px">
       {#if data.type === UniformNodeType.Float}
         <input type="number" bind:value={data.value} />
       {:else if data.type === UniformNodeType.Tex}
@@ -51,25 +51,67 @@
         <input type="text" bind:value={data.textureSrc} />
         <img src={data.textureSrc} alt="Texture preview" width="100px" />
       {:else if data.type === UniformNodeType.ViewMatrix}
-        x: <input type="number" bind:value={data.x} /> <br />
-        y: <input type="number" bind:value={data.y} /> <br />
-        z: <input type="number" bind:value={data.z} /> <br />
-
-        targ x: <input type="number" bind:value={data.targetX} /> <br />
-        targ y: <input type="number" bind:value={data.targetY} /> <br />
-        targ z: <input type="number" bind:value={data.targetZ} /> <br />
-
-        up x: <input type="number" bind:value={data.upX} /> <br />
-        up y: <input type="number" bind:value={data.upY} /> <br />
-        up z: <input type="number" bind:value={data.upZ} /> <br />
+        <table>
+          <tr>
+            <td>x:</td><td> <input type="number" bind:value={data.x} /> </td>
+          </tr><tr>
+            <td>y: </td><td><input type="number" bind:value={data.y} /> </td>
+          </tr><tr>
+            <td>z </td><td><input type="number" bind:value={data.z} /> </td>
+          </tr>
+          <tr>
+            <td>upX: </td><td
+              ><input type="number" bind:value={data.upX} />
+            </td>
+          </tr>
+          <tr>
+            <td>upY: </td><td
+              ><input type="number" bind:value={data.upY} />
+            </td>
+          </tr>
+          <tr>
+            <td>upZ: </td><td
+              ><input type="number" bind:value={data.upZ} />
+            </td>
+          </tr>
+          <tr>
+            <td>targetX: </td><td
+              ><input type="number" bind:value={data.targetX} />
+            </td>
+          </tr>
+          <tr>
+            <td>targetY: </td><td
+              ><input type="number" bind:value={data.targetY} />
+            </td>
+          </tr>
+          <tr>
+            <td>targetZ: </td><td
+              ><input type="number" bind:value={data.targetZ} />
+            </td>
+          </tr>
+        </table>
       {:else if data.type === UniformNodeType.ProjectionMatrix}
-        fov: <input type="number" bind:value={data.fov} /> <br />
-        far: <input type="number" bind:value={data.far} /> <br />
-        near: <input type="number" bind:value={data.near} /> <br />
+        <table>
+          <tr>
+            <td>fov</td><td> <input type="number" bind:value={data.fov} /> </td>
+          </tr><tr>
+            <td>far</td><td> <input type="number" bind:value={data.far} /> </td>
+          </tr><tr>
+            <td>near</td><td>
+              <input type="number" bind:value={data.near} />
+            </td>
+          </tr>
+        </table>
       {:else if data.type === UniformNodeType.TranslationMatrix}
-        x: <input type="number" bind:value={data.x} /> <br />
-        y: <input type="number" bind:value={data.y} /> <br />
-        z: <input type="number" bind:value={data.z} /> <br />
+        <table>
+          <tr>
+            <td>x:</td><td> <input type="number" bind:value={data.x} /> </td>
+          </tr><tr>
+            <td>y: </td><td><input type="number" bind:value={data.y} /> </td>
+          </tr><tr>
+            <td>z </td><td><input type="number" bind:value={data.z} /> </td>
+          </tr>
+        </table>
       {/if}
     </div>
   </div>

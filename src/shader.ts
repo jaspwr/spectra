@@ -9,10 +9,7 @@ export enum ShaderType {
   Comp,
 }
 
-let ID_COUNTER = 0;
-
 export class Shader {
-  public readonly uid: number = ID_COUNTER++;
   private _filename: string;
   private _contents: string;
   private _data: ShaderData;
@@ -32,13 +29,13 @@ export class Shader {
   public compiled(gl: WebGLRenderingContext): WebGLShader {
     const currentSourceHash = hashString(this._contents);
 
-    if (
-      this._compiled === null ||
-      this._lastCompiledHash !== currentSourceHash
-    ) {
+    // if (
+    //   this._compiled === null ||
+    //   this._lastCompiledHash !== currentSourceHash
+    // ) {
       this._compiled = compileShader(gl, this);
       this._lastCompiledHash = currentSourceHash;
-    }
+    // }
 
     return this._compiled!;
   }

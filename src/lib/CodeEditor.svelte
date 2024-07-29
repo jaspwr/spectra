@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
   import type * as Monaco from "monaco-editor/esm/vs/editor/editor.api";
+  // @ts-ignore
   import { initVimMode } from "monaco-vim";
   import { projects, selectedProject } from "../project";
 
@@ -13,7 +14,7 @@
 
   $: project = $projects.find((p) => p.name === $selectedProject);
   $: selectedFile = project?.selectedShaderFile;
-  $: file = project?.shaderFiles.find((s) => s.uid === $selectedFile);
+  $: file = project?.shaderFiles.find((s) => s.filename === $selectedFile);
 
   $: showEditor = $selectedFile !== undefined && file;
 

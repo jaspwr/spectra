@@ -2,20 +2,24 @@
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
   import { writable, type Writable } from "svelte/store";
   import { projects, selectedProject } from "@/project";
+    import InputHandleList from "../InputHandleList.svelte";
 
   type $$Props = NodeProps;
 
   $: project = $projects.find((p) => p.name === $selectedProject);
 
-  export let data: { shaderId: number } = {
-    shaderId: 0,
+  export let data: { shaderSourceFileName: string } = {
+    shaderSourceFileName: "",
   };
 
-  if (data.shaderId === undefined) {
-    data.shaderId = 0;
+  if (data.shaderSourceFileName === undefined) {
+    data.shaderSourceFileName = "";
   }
 
-  $: shader = project?.shaderFiles.find((s) => s.uid === data.shaderId);
+  $: shader = project?.shaderFiles.find((s) => s.filename === data.shaderSourceFileName);
+
+  let handles: [string, string][];
+  $: handles = (shader?.data?.uniforms ?? []).map((u) => [u.name, `${u.type} ${u.name}`]);
 </script>
 
 <div
@@ -27,27 +31,16 @@
     <strong>Shader</strong>
   </div>
   <div>
-    {#if data.shaderId !== undefined}
-      <select bind:value={data.shaderId}>
+    {#if data.shaderSourceFileName !== undefined}
+      <select bind:value={data.shaderSourceFileName}>
         {#each project?.shaderFiles ?? [] as shader}
-          <option value={shader.uid}>{shader.filename}</option>
+          <option value={shader.filename}>{shader.filename}</option>
         {/each}
       </select>
     {/if}
   </div>
 
-  {#each shader?.data?.uniforms ?? [] as uniform, i}
-    <Handle
-      type="target"
-      position={Position.Left}
-      style="top:{i * 16.3 + 55}px;"
-      id={uniform.name}
-    />
-    <div class="label" style="top:{i * 16.3 + 50}px;">
-      <strong>{uniform.name}</strong>
-      <span>{uniform.type}</span>
-    </div>
-  {/each}
+  <InputHandleList {handles} top={60} />
   <Handle type="source" position={Position.Right} />
 </div>
 
