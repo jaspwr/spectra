@@ -2,7 +2,7 @@
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
   import { writable, type Writable } from "svelte/store";
   import { projects, selectedProject } from "@/project";
-    import InputHandleList from "../InputHandleList.svelte";
+  import InputHandleList from "../InputHandleList.svelte";
 
   type $$Props = NodeProps;
 
@@ -16,17 +16,16 @@
     data.shaderSourceFileName = "";
   }
 
-  $: shader = project?.shaderFiles.find((s) => s.filename === data.shaderSourceFileName);
+  $: shader = project?.shaderFiles.find(
+    (s) => s.filename === data.shaderSourceFileName,
+  );
 
   let handles: [string, string][];
-  $: handles = (shader?.data?.uniforms ?? []).map((u) => [u.name, `${u.type} ${u.name}`]);
+  $: uniforms = shader?.data?.uniforms;
+  $: handles = ($uniforms ?? []).map((u) => [u.name, `${u.type} ${u.name}`]);
 </script>
 
-<div
-  class="shader"
-  style="height: {(shader?.data?.uniforms?.length ?? 0) * 16.3 + 50}px"
->
-
+<div class="shader" style="height: {($uniforms?.length ?? 0) * 16.3 + 50}px">
   <div>
     <strong>Shader</strong>
   </div>

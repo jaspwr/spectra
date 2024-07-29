@@ -1,6 +1,6 @@
 import { Projection, View } from "./camera";
 import type { Project } from "./project";
-import { Shader, ShaderType } from "./shader";
+import { Shader, ShaderType, type Uniform } from "./shader";
 import { hashString, mat4_0, mat4_I, type Mat4, type Model, type Vec3 } from "./utils";
 
 export const WINDOW_ASPECT: { value: number } = { value: 1 };
@@ -26,10 +26,14 @@ export class GLProgram {
     let uniforms: Record<string, WebGLUniformLocation> = {};
     let uniformTypes: Record<string, string> = {};
 
-    console.log(shaders);
     for (let shader of shaders) {
-      for (let uniform of shader.data.uniforms) {
-        console.log(uniform.name);
+      const uniformDefs: Uniform[] = [];
+      shader.data.uniforms.update((u) => {
+        uniformDefs.push(...u);
+        return u;
+      });
+
+      for (let uniform of uniformDefs) {
         uniforms[uniform.name] = gl.getUniformLocation(
           this.program,
           uniform.name

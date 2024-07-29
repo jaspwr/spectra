@@ -1,3 +1,4 @@
+import { writable, type Writable } from "svelte/store";
 import { compileShader } from "./gl";
 import { deserialize } from "./project";
 import { hashString } from "./utils";
@@ -17,9 +18,14 @@ export class Shader {
   private _lastCompiledHash: number | null = null;
 
   public constructor(filename: string, contents: string) {
+    this._data = {
+      type: ShaderType.Vert,
+      uniforms: writable([]),
+    };
     this._filename = filename;
     this._contents = contents;
-    this._data = this.parseData();
+    this.updateType();
+    this.updateUniforms();
   }
 
   /**
@@ -33,8 +39,8 @@ export class Shader {
     //   this._compiled === null ||
     //   this._lastCompiledHash !== currentSourceHash
     // ) {
-      this._compiled = compileShader(gl, this);
-      this._lastCompiledHash = currentSourceHash;
+    this._compiled = compileShader(gl, this);
+    this._lastCompiledHash = currentSourceHash;
     // }
 
     return this._compiled!;
@@ -46,12 +52,12 @@ export class Shader {
 
   public updateFilename(filename: string) {
     this._filename = filename;
-    this._data = this.parseData();
+    this.updateType();
   }
 
   public updateContents(contents: string) {
     this._contents = contents;
-    this._data = this.parseData();
+    this.updateUniforms();
   }
 
   public get filename(): string {
@@ -66,7 +72,7 @@ export class Shader {
     return this._data;
   }
 
-  private parseData(): ShaderData {
+  private updateType() {
     let extension = this.filename.split(".").pop();
     let type: ShaderType;
     switch (extension) {
@@ -88,6 +94,10 @@ export class Shader {
         );
     }
 
+    this._data.type = type;
+  }
+
+  private updateUniforms() {
     let uniforms: Uniform[] = [];
     let lines = this.contents.split("\n");
     for (let line of lines) {
@@ -98,7 +108,7 @@ export class Shader {
       uniforms.push({ name, type });
     }
 
-    return { type, uniforms };
+    this._data.uniforms.set(uniforms);
   }
 
   public serialize(): SerializedShader {
@@ -120,10 +130,10 @@ export function deserializeShader(s: SerializedShader) {
 
 interface ShaderData {
   type: ShaderType;
-  uniforms: Uniform[];
+  uniforms: Writable<Uniform[]>;
 }
 
-interface Uniform {
+export interface Uniform {
   name: string;
   type: string;
 }
