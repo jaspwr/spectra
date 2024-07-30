@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { TextureResizeMode } from "@/gl";
+  import { TextureResizeMode } from "@/gl/texture";
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
 
   type $$Props = NodeProps;

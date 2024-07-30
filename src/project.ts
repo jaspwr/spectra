@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store";
-import { deserializeShader, Shader, type SerializedShader } from "./shader";
+import { deserializeShader, Shader, type SerializedShader } from "./gl/shader";
 import type {
   Node,
   Edge as SvelteFlowEdge,

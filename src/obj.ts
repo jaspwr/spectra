@@ -11,6 +11,9 @@ import {
 
 const MODEL_CACHE: { [url: string]: Model } = {};
 
+/**
+ * Load and parse an OBJ file from the given URL.
+ * */
 export async function loadOBJ(url: string): Promise<Model> {
   if (url in MODEL_CACHE) return MODEL_CACHE[url];
 

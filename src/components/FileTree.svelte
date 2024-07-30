@@ -1,6 +1,6 @@
 <script lang="ts">
   import { projects, selectedProject, type Project } from "../project";
-  import { Shader, ShaderType } from "../shader";
+  import { Shader, ShaderType } from "@/gl/shader";
 
   $: list =
     $projects.find((p) => p.name === $selectedProject)?.shaderFiles || [];

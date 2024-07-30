@@ -1,7 +1,5 @@
 import { writable, type Writable } from "svelte/store";
-import { compileShader } from "./gl";
-import { deserialize } from "./project";
-import { hashString } from "./utils";
+import { hashString } from "@/utils";
 
 export enum ShaderType {
   Frag,
@@ -136,4 +134,46 @@ interface ShaderData {
 export interface Uniform {
   name: string;
   type: string;
+}
+
+export function compileShader(
+  gl: WebGLRenderingContext,
+  source: Shader
+): WebGLShader {
+  let type: number | undefined = undefined;
+
+  console.log(source.filename, source.data.type);
+
+  switch (source.data.type) {
+    case ShaderType.Frag:
+      type = gl.FRAGMENT_SHADER;
+      break;
+    case ShaderType.Vert:
+      type = gl.VERTEX_SHADER;
+      break;
+  }
+  if (type === undefined) {
+    throw new Error("Invalid shader type");
+  }
+
+  const shader = gl.createShader(type);
+  if (shader === null) {
+    throw new Error("Failed to create shader");
+  }
+
+  gl.shaderSource(shader, source.contents);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    throw {
+      filename: source.filename,
+      message: gl.getShaderInfoLog(shader),
+    } as ShaderCompileError;
+  }
+
+  return shader;
+}
+
+interface ShaderCompileError {
+  filename: string;
+  message: string;
 }

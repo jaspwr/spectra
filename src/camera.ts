@@ -1,4 +1,4 @@
-import { WINDOW_ASPECT } from "./gl";
+import { WINDOW_ASPECT } from "@/gl/utils";
 import { mat4_0, mat4_translate, type Mat4, type Vec3 } from "./utils";
 
 export class View {

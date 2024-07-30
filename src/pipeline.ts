@@ -1,31 +1,16 @@
 import type { Edge, Node } from "@xyflow/svelte";
-import {
-  createCubeMapTexture,
-  FrameBufferTexture,
-  FullscreenQuad,
-  GLProgram,
-  loadImageTexture,
-  Mesh,
-  RenderStep,
-  SkyBox,
-  TextureResizeMode,
-  UniformFloatSetter,
-  UniformProjectionSetter,
-  UniformTextureSetter,
-  UniformTimeSetter,
-  UniformTranslationSetter,
-  UniformVec2Setter,
-  UniformViewSetter,
-  UniformWindowSizeSetter,
-  type Geometry,
-  type UniformSetter,
-} from "./gl";
 import type { Project } from "./project";
-import { Shader } from "./shader";
+import { Shader } from "./gl/shader";
 import { loadOBJ } from "./obj";
 import { GL_ERRORS, type Vec2, type Vec3 } from "./utils";
 import { UniformNodeType } from "./components/PipelineEditor/nodes/uniform";
 import { GeometryNodeType } from "./components/PipelineEditor/nodes/geometry";
+import { RenderStep } from "./gl/renderStep";
+import { FrameBufferTexture } from "./gl/framebuffer";
+import { createCubeMapTexture, loadImageTexture, TextureResizeMode } from "./gl/texture";
+import { FullscreenQuad, Mesh, SkyBox, type Geometry } from "./gl/geometry";
+import { GLProgram } from "./gl/glProgram";
+import { UniformFloatSetter, UniformProjectionSetter, UniformTextureSetter, UniformTimeSetter, UniformTranslationSetter, UniformVec2Setter, UniformViewSetter, UniformWindowSizeSetter, type UniformSetter } from "./gl/uniform";
 
 export class PipeLine {
   private steps: RenderStep[] = [];
@@ -48,8 +33,8 @@ export class PipeLine {
       if (nodes === undefined || edges === undefined)
         throw ["Error in graph data"];
 
-      const framebuffers = createFramebuffers(nodes, edges, gl);
-      const textures = createTextures(nodes, edges, gl);
+      const framebuffers = createFramebuffers(nodes, gl);
+      const textures = createTextures(nodes, gl);
 
       const steps = nodes
         .filter((n) => n.type === "gl-program")
@@ -96,6 +81,10 @@ function eprintln(e: any) {
   }
 }
 
+/**
+ * Finds the connected uniform nodes and dependency framebuffers for a shader node.
+ * A shader depends on a framebuffer if it reads from it.
+ * */
 function handleShader(
   shader: Node,
   ns: Node[],
@@ -115,6 +104,10 @@ function handleShader(
   };
 }
 
+/**
+ * Creates UniformSetters from all of the uniform values connected to a node.
+ * @param self The node that all of the uniforms are connected to.
+ **/
 function getUniformSetters(
   self: Node,
   ns: Node[],
@@ -122,7 +115,9 @@ function getUniformSetters(
   textures: Record<string, WebGLTexture>,
   framebuffers: Record<string, FrameBufferTexture>
 ): UniformSetter[] {
-  let textureUnitCounter = 0;
+  let textureUnitCounter = {
+    value: 0
+  };
 
   return es
     .filter((e) => e.target === self.id)
@@ -132,56 +127,64 @@ function getUniformSetters(
 
       switch (uniformNode.type) {
         case "uniform":
-          switch (uniformNode.data.type) {
-            case UniformNodeType.Time:
-              return new UniformTimeSetter(uniformName);
-            case UniformNodeType.Tex:
-              return new UniformTextureSetter(uniformName, textures[uniformNode.data.textureSrc as string], textureUnitCounter++, false);
-            case UniformNodeType.Float:
-              return new UniformFloatSetter(uniformName, (uniformNode.data.value ?? 0) as number);
-            case UniformNodeType.ViewMatrix: {
-              const data = uniformNode.data;
-              return new UniformViewSetter(uniformName,
-                [data.x, data.y, data.z,] as Vec3,
-                [data.targetX, data.targetY, data.targetZ] as Vec3,
-                [data.upX, data.upY, data.upZ] as Vec3);
-            }
-            case UniformNodeType.ProjectionMatrix:
-              return new UniformProjectionSetter(uniformName,
-                uniformNode.data.fov as number,
-                uniformNode.data.far as number,
-                uniformNode.data.near as number);
-            case UniformNodeType.TranslationMatrix:
-              return new UniformTranslationSetter(uniformName, [
-                uniformNode.data.x ?? 0,
-                uniformNode.data.y ?? 0,
-                uniformNode.data.z ?? 0] as Vec3);
-            case UniformNodeType.Vec2:
-              return new UniformVec2Setter(uniformName, [
-                uniformNode.data.x ?? 0,
-                uniformNode.data.y ?? 0] as Vec2);
-            case UniformNodeType.WindowSize:
-              return new UniformWindowSizeSetter(uniformName);
-            case UniformNodeType.CubeMap:
-              return new UniformTextureSetter(uniformName, textures[uniformNode.data.textureSrc as string], textureUnitCounter++, true);
-            default:
-              throw new Error("Unsupported uniform type");
-          }
+          return handleUniformNode(uniformName, uniformNode, textures, textureUnitCounter);
         case "framebuffer":
           const framebuftex = framebuffers[uniformNode.id];
           if (framebuftex === undefined) {
             throw new Error("Invalid framebuffer.");
           }
-          return new UniformTextureSetter(uniformName, framebuftex.texture, textureUnitCounter++, false);
+          return new UniformTextureSetter(uniformName, framebuftex.texture, textureUnitCounter.value++, false);
         default:
           throw new Error("Unsupported uniform type");
       }
     });
 }
 
+function handleUniformNode(
+  uniformName: string,
+  uniformNode: Node,
+  textures: Record<string, WebGLTexture>,
+  textureUnitCounter: { value: number }): UniformSetter {
+
+  switch (uniformNode.data.type) {
+    case UniformNodeType.Time:
+      return new UniformTimeSetter(uniformName);
+    case UniformNodeType.Tex:
+      return new UniformTextureSetter(uniformName, textures[uniformNode.data.textureSrc as string], textureUnitCounter.value++, false);
+    case UniformNodeType.Float:
+      return new UniformFloatSetter(uniformName, (uniformNode.data.value ?? 0) as number);
+    case UniformNodeType.ViewMatrix: {
+      const data = uniformNode.data;
+      return new UniformViewSetter(uniformName,
+        [data.x, data.y, data.z,] as Vec3,
+        [data.targetX, data.targetY, data.targetZ] as Vec3,
+        [data.upX, data.upY, data.upZ] as Vec3);
+    }
+    case UniformNodeType.ProjectionMatrix:
+      return new UniformProjectionSetter(uniformName,
+        uniformNode.data.fov as number,
+        uniformNode.data.far as number,
+        uniformNode.data.near as number);
+    case UniformNodeType.TranslationMatrix:
+      return new UniformTranslationSetter(uniformName, [
+        uniformNode.data.x ?? 0,
+        uniformNode.data.y ?? 0,
+        uniformNode.data.z ?? 0] as Vec3);
+    case UniformNodeType.Vec2:
+      return new UniformVec2Setter(uniformName, [
+        uniformNode.data.x ?? 0,
+        uniformNode.data.y ?? 0] as Vec2);
+    case UniformNodeType.WindowSize:
+      return new UniformWindowSizeSetter(uniformName);
+    case UniformNodeType.CubeMap:
+      return new UniformTextureSetter(uniformName, textures[uniformNode.data.textureSrc as string], textureUnitCounter.value++, true);
+    default:
+      throw new Error("Unsupported uniform type");
+  }
+}
+
 function createFramebuffers(
   ns: Node[],
-  es: Edge[],
   gl: WebGLRenderingContext
 ): Record<string, FrameBufferTexture> {
   return ns.filter((n) => n.type === "framebuffer")
@@ -199,7 +202,6 @@ function createFramebuffers(
 
 function createTextures(
   ns: Node[],
-  es: Edge[],
   gl: WebGLRenderingContext
 ): Record<string, WebGLTexture> {
   const uniformNodes = ns.filter((n) => n.type === "uniform");

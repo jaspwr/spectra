@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { PipeLine } from "../pipeline";
   import type { Project } from "../project";
-  import { WINDOW_ASPECT, WINDOW_HEIGHT, WINDOW_WIDTH } from "../gl";
+  import { WINDOW_ASPECT, WINDOW_HEIGHT, WINDOW_WIDTH } from "@/gl/utils";
   import { FPS } from "../utils";
 
   export let project: Project | null;
