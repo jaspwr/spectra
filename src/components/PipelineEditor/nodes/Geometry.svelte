@@ -2,30 +2,31 @@
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
   import { writable, type Writable } from "svelte/store";
   import { projects, selectedProject } from "@/project";
+  import { GeometryNodeType } from "./geometry";
 
   type $$Props = NodeProps;
 
   $: project = $projects.find((p) => p.name === $selectedProject);
 
   export let data: {
-    type: string;
+    type: GeometryNodeType;
     modelSrc: string;
     uniformOverrides: string[];
   } = {
-    type: "Screen Quad",
+    type: GeometryNodeType.ScreenQuad,
     modelSrc: "",
     uniformOverrides: [],
   };
 
   if (data.type === undefined) {
-    data.type = "Screen Quad";
+    data.type = GeometryNodeType.ScreenQuad;
   }
 
   if (data.uniformOverrides === undefined) {
     data.uniformOverrides = [];
   }
 
-  const types = ["Screen Quad", "Model"];
+  const types = Object.values(GeometryNodeType);
 
   $: console.log(data.uniformOverrides);
 </script>

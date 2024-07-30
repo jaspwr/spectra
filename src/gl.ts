@@ -4,6 +4,8 @@ import { Shader, ShaderType, type Uniform } from "./shader";
 import { hashString, mat4_0, mat4_I, type Mat4, type Model, type Vec3 } from "./utils";
 
 export const WINDOW_ASPECT: { value: number } = { value: 1 };
+export const WINDOW_HEIGHT: { value: number } = { value: 1 };
+export const WINDOW_WIDTH: { value: number } = { value: 1 };
 
 export class GLProgram {
   public readonly program: WebGLProgram;
@@ -137,22 +139,53 @@ export class UniformTimeSetter extends UniformFloatSetter {
   }
 }
 
+
+export class UniformVec2Setter implements UniformSetter {
+  protected name: string;
+  protected value: [number, number];
+
+  protected getValue(): [number, number] {
+    return this.value;
+  }
+
+  public constructor(name: string, value: [number, number]) {
+    this.name = name;
+    this.value = value;
+  }
+
+  public set(gl: WebGLRenderingContext, program: GLProgram) {
+    const [x, y] = this.getValue();
+    gl.uniform2f(program.uniforms[this.name], x, y);
+  }
+}
+
+export class UniformWindowSizeSetter extends UniformVec2Setter {
+  public constructor(name: string) {
+    super(name, [0, 0]);
+  }
+
+  protected override getValue(): [number, number] {
+    return [WINDOW_WIDTH.value, WINDOW_HEIGHT.value];
+  }
+}
+
 export class UniformTextureSetter implements UniformSetter {
   protected name: string;
   protected texture: WebGLTexture;
   private textureUnit: number;
+  private isCubeMap: boolean;
 
-  public constructor(name: string, texture: WebGLTexture, textureUnit: number) {
+  public constructor(name: string, texture: WebGLTexture, textureUnit: number, isCubeMap: boolean) {
     this.name = name;
     this.texture = texture;
     this.textureUnit = textureUnit;
-    console.log(name, texture, textureUnit);
+    this.isCubeMap = isCubeMap;
   }
 
   public set(gl: WebGLRenderingContext, program: GLProgram) {
     const unit: GLenum = gl.TEXTURE0 + this.textureUnit;
     gl.activeTexture(unit);
-    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.bindTexture(this.isCubeMap ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D, this.texture);
     gl.uniform1i(program.uniforms[this.name], this.textureUnit);
   }
 }
@@ -318,6 +351,49 @@ export class FullscreenQuad extends Geometry {
   }
 }
 
+export class SkyBox extends Geometry {
+  vbo: WebGLBuffer;
+  ebo: WebGLBuffer;
+  vertexCount: number = 36;
+
+  public constructor(gl: WebGLRenderingContext) {
+    super([]);
+
+    // prettier-ignore
+    const vertices = [
+      -1, -1, 1, // 0         7--------6
+      1, -1, 1,  // 1        /|       /|
+      1, -1, -1, // 2       / |      / |
+      -1, -1, -1,// 3      4--------5  |
+      -1, 1, 1,  // 4      | 3------|--2
+      1, 1, 1,   // 5      | /      | /
+      1, 1, -1,  // 6      |/       |/
+      -1, 1, -1, // 7      0--------1
+    ];
+
+    const indices = new Uint16Array([
+      0, 1, 2, 2, 3, 0, // bottom
+      4, 5, 6, 6, 7, 4, // top
+      0, 4, 7, 7, 3, 0, // left
+      1, 5, 6, 6, 2, 1, // right
+      0, 1, 5, 5, 4, 0, // front
+      3, 2, 6, 6, 7, 3, // back
+    ]);
+
+    this.vbo = createVBO(gl, vertices);
+    this.ebo = gl.createBuffer()!;
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ebo);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+  }
+
+  public render(gl: WebGLRenderingContext, program: GLProgram) {
+    bindVBOToAttribute(gl, this.vbo, program.attributes["position"], 3);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ebo);
+    gl.drawElements(gl.TRIANGLES, this.vertexCount, gl.UNSIGNED_SHORT, 0);
+  }
+}
+
 function createVBO(gl: WebGLRenderingContext, data: number[]): WebGLBuffer {
   const vbo = gl.createBuffer()!;
   gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
@@ -393,10 +469,11 @@ export class FrameBufferTexture {
     gl: WebGLRenderingContext,
     height: number,
     width: number,
+    resizeMode: TextureResizeMode,
     isDepthMap: boolean = false
   ) {
     this.isDepthMap = isDepthMap;
-    [this.framebuffer, this.texture, this.renderBuffer] = this.createNew(gl, height, width, isDepthMap);
+    [this.framebuffer, this.texture, this.renderBuffer] = this.createNew(gl, height, width, resizeMode, isDepthMap);
     this.height = height;
     this.width = width;
   }
@@ -428,7 +505,7 @@ export class FrameBufferTexture {
     this.width = width;
   }
 
-  private createNew(gl: WebGLRenderingContext, height: number, width: number, isDepthMap: boolean): [WebGLFramebuffer, WebGLTexture, WebGLRenderbuffer] {
+  private createNew(gl: WebGLRenderingContext, height: number, width: number, resizeMode: TextureResizeMode, isDepthMap: boolean): [WebGLFramebuffer, WebGLTexture, WebGLRenderbuffer] {
     const texture = gl.createTexture();
 
     if (texture === null) {
@@ -450,7 +527,8 @@ export class FrameBufferTexture {
       isDepthMap ? gl.UNSIGNED_INT : gl.UNSIGNED_BYTE,
       null
     );
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, getResizeMode(gl, resizeMode));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, getResizeMode(gl, resizeMode));
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
@@ -491,7 +569,21 @@ export class FrameBufferTexture {
   }
 }
 
-export function loadImageTexture(gl: WebGLRenderingContext, url: string) {
+export enum TextureResizeMode {
+  Nearest = "Nearest",
+  Linear = "Linear",
+}
+
+function getResizeMode(gl: WebGLRenderingContext, mode: TextureResizeMode): GLenum {
+  switch (mode) {
+    case TextureResizeMode.Nearest:
+      return gl.NEAREST;
+    case TextureResizeMode.Linear:
+      return gl.LINEAR;
+  }
+}
+
+export function loadImageTexture(gl: WebGLRenderingContext, url: string): WebGLTexture {
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -516,9 +608,87 @@ export function loadImageTexture(gl: WebGLRenderingContext, url: string) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
     // gl.generateMipmap(gl.TEXTURE_2D);
   });
 
+  if (texture === null) {
+    throw new Error("Failed to create texture");
+  }
+
   return texture;
+}
+
+export function createCubeMapTexture(gl: WebGLRenderingContext, url: string): WebGLTexture {
+  const texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+
+  const faces = [
+    gl.TEXTURE_CUBE_MAP_POSITIVE_X,
+    gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
+    gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
+    gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+    gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+    gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,
+  ];
+
+  const fileNames = ["left", "right", "top", "bottom", "front", "back"];
+
+  for (let i = 0; i < faces.length; i++) {
+    const image = new Image();
+    image.src = `${url}/${fileNames[i]}.png`;
+    image.addEventListener("load", function() {
+      gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+      gl.texImage2D(faces[i], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    });
+  }
+
+  gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+  if (texture === null) {
+    throw new Error("Failed to create cubemap");
+  }
+
+  return texture;
+}
+
+export function createSkyBoxProgram(gl: WebGLRenderingContext) {
+  const vertSource = `
+attribute vec3 position;
+
+uniform mat4 uView;
+uniform mat4 uProjection;
+
+varying vec3 vUv;
+
+void main() {
+    vec4 pos = uProjection * uView * position;
+    gl_Position = vec4(pos.x, pos.y, pos.w, pos.w);
+    vUv = vec3(position.x, position.y, -position.z);
+}
+  `;
+  const fragSource = `
+#version 100
+
+#ifdef GL_ES
+precision highp float;
+#endif
+
+varying vec3 vUv;
+
+uniform samplerCube uSkybox;
+
+void main(void) {
+    gl_FragColor = textureCube(uSkybox, vUv);
+}
+`;
+
+  const shaders = [
+    new Shader("skybox.vert", vertSource),
+    new Shader("skybox.frag", fragSource),
+  ];
+  return new GLProgram(gl, shaders);
 }

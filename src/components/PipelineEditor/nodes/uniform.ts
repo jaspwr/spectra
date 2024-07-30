@@ -6,13 +6,17 @@ export enum UniformNodeType {
   ViewMatrix = "view",
   ProjectionMatrix = "projection",
   TranslationMatrix = "translation",
+  WindowSize = "window size",
+  CubeMap = "cube map",
 };
 
 export type UniformNodeData =
   { type: UniformNodeType.Tex, textureSrc: string }
+  | { type: UniformNodeType.CubeMap, textureSrc: string }
   | { type: UniformNodeType.Time }
+  | { type: UniformNodeType.WindowSize }
   | { type: UniformNodeType.Float, value: number }
-  | { type: UniformNodeType.Vec2, value: [number, number] }
+  | { type: UniformNodeType.Vec2, x: number, y: number }
   | { type: UniformNodeType.ViewMatrix, x: number, y: number, z: number, targetX: number, targetY: number, targetZ: number, upX: number, upY: number, upZ: number }
   | { type: UniformNodeType.ProjectionMatrix, fov: number, near: number, far: number }
   | { type: UniformNodeType.TranslationMatrix, x: number, y: number, z: number };

@@ -1,6 +1,6 @@
 import * as monaco from "monaco-editor";
 
-import "./editor/glsl";
+import "./glsl";
 
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 self.MonacoEnvironment = {

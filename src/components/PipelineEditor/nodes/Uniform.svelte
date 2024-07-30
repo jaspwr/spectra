@@ -112,6 +112,18 @@
             <td>z </td><td><input type="number" bind:value={data.z} /> </td>
           </tr>
         </table>
+      {:else if data.type === UniformNodeType.Vec2}
+        <table>
+          <tr>
+            <td>x:</td><td> <input type="number" bind:value={data.x} /> </td>
+          </tr><tr>
+            <td>y: </td><td><input type="number" bind:value={data.y} /> </td>
+          </tr>
+        </table>
+      {:else if data.type === UniformNodeType.CubeMap}
+        src:
+        <input type="text" bind:value={data.textureSrc} />
+        <img src={`${data.textureSrc}/right.png`} alt="Texture preview" width="100px" />
       {/if}
     </div>
   </div>

@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { PipeLine } from "../pipeline";
   import type { Project } from "../project";
-  import { WINDOW_ASPECT } from "../gl";
+  import { WINDOW_ASPECT, WINDOW_HEIGHT, WINDOW_WIDTH } from "../gl";
   import { FPS } from "../utils";
 
   export let project: Project | null;
@@ -55,6 +55,8 @@
     canv.height = parent.clientHeight;
 
     WINDOW_ASPECT.value = canv.height / canv.width;
+    WINDOW_HEIGHT.value = canv.height;
+    WINDOW_WIDTH.value = canv.width;
 
     if (gl !== null) {
       gl.viewport(0, 0, canv.width, canv.height);

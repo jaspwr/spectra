@@ -1,25 +1,31 @@
 import type { Edge, Node } from "@xyflow/svelte";
 import {
+  createCubeMapTexture,
   FrameBufferTexture,
   FullscreenQuad,
   GLProgram,
   loadImageTexture,
   Mesh,
   RenderStep,
+  SkyBox,
+  TextureResizeMode,
   UniformFloatSetter,
   UniformProjectionSetter,
   UniformTextureSetter,
   UniformTimeSetter,
   UniformTranslationSetter,
+  UniformVec2Setter,
   UniformViewSetter,
+  UniformWindowSizeSetter,
   type Geometry,
   type UniformSetter,
 } from "./gl";
 import type { Project } from "./project";
 import { Shader } from "./shader";
 import { loadOBJ } from "./obj";
-import { GL_ERRORS, type Vec3 } from "./utils";
-import { UniformNodeType } from "./lib/PipelineEditor/nodes/uniform";
+import { GL_ERRORS, type Vec2, type Vec3 } from "./utils";
+import { UniformNodeType } from "./components/PipelineEditor/nodes/uniform";
+import { GeometryNodeType } from "./components/PipelineEditor/nodes/geometry";
 
 export class PipeLine {
   private steps: RenderStep[] = [];
@@ -130,7 +136,7 @@ function getUniformSetters(
             case UniformNodeType.Time:
               return new UniformTimeSetter(uniformName);
             case UniformNodeType.Tex:
-              return new UniformTextureSetter(uniformName, textures[uniformNode.data.textureSrc as string], textureUnitCounter++);
+              return new UniformTextureSetter(uniformName, textures[uniformNode.data.textureSrc as string], textureUnitCounter++, false);
             case UniformNodeType.Float:
               return new UniformFloatSetter(uniformName, (uniformNode.data.value ?? 0) as number);
             case UniformNodeType.ViewMatrix: {
@@ -150,6 +156,14 @@ function getUniformSetters(
                 uniformNode.data.x ?? 0,
                 uniformNode.data.y ?? 0,
                 uniformNode.data.z ?? 0] as Vec3);
+            case UniformNodeType.Vec2:
+              return new UniformVec2Setter(uniformName, [
+                uniformNode.data.x ?? 0,
+                uniformNode.data.y ?? 0] as Vec2);
+            case UniformNodeType.WindowSize:
+              return new UniformWindowSizeSetter(uniformName);
+            case UniformNodeType.CubeMap:
+              return new UniformTextureSetter(uniformName, textures[uniformNode.data.textureSrc as string], textureUnitCounter++, true);
             default:
               throw new Error("Unsupported uniform type");
           }
@@ -158,7 +172,7 @@ function getUniformSetters(
           if (framebuftex === undefined) {
             throw new Error("Invalid framebuffer.");
           }
-          return new UniformTextureSetter(uniformName, framebuftex.texture, textureUnitCounter++);
+          return new UniformTextureSetter(uniformName, framebuftex.texture, textureUnitCounter++, false);
         default:
           throw new Error("Unsupported uniform type");
       }
@@ -171,7 +185,12 @@ function createFramebuffers(
   gl: WebGLRenderingContext
 ): Record<string, FrameBufferTexture> {
   return ns.filter((n) => n.type === "framebuffer")
-    .map((n) => [n.id, new FrameBufferTexture(gl, 1000, 100, n.data.isDepthMap as boolean)] as [string, FrameBufferTexture])
+    .map((n) => [n.id, new FrameBufferTexture(
+      gl,
+      100,
+      100,
+      (n.data.resizeMode ?? TextureResizeMode.Linear) as TextureResizeMode,
+      n.data.isDepthMap as boolean)] as [string, FrameBufferTexture])
     .reduce((acc, [id, fb]) => {
       acc[id] = fb;
       return acc;
@@ -183,12 +202,23 @@ function createTextures(
   es: Edge[],
   gl: WebGLRenderingContext
 ): Record<string, WebGLTexture> {
-  return ns.filter((n) => n.type === "uniform" && n.data.type === "texture")
-    .map((n) => [n.data.textureSrc, loadImageTexture(gl, n.data.textureSrc as string)] as [string, WebGLTexture])
-    .reduce((acc, [id, tex]) => {
-      acc[id] = tex;
-      return acc;
-    }, {} as Record<string, WebGLTexture>);
+  const uniformNodes = ns.filter((n) => n.type === "uniform");
+  const textureNodes = uniformNodes.filter((n) => n.data.type === UniformNodeType.Tex);
+  const cubeMapNodes = uniformNodes.filter((n) => n.data.type === UniformNodeType.CubeMap);
+
+  const textures: Record<string, WebGLTexture> = {};
+
+  for (let n of textureNodes) {
+    if (textures[n.data.textureSrc as string] !== undefined) continue;
+    textures[n.data.textureSrc as string] = loadImageTexture(gl, n.data.textureSrc as string);
+  }
+
+  for (let n of cubeMapNodes) {
+    if (textures[n.data.textureSrc as string] !== undefined) continue;
+    textures[n.data.textureSrc as string] = createCubeMapTexture(gl, n.data.textureSrc as string);
+  }
+
+  return textures;
 }
 
 async function createRenderStep(
@@ -254,12 +284,15 @@ async function createRenderStep(
   for (let g of geometry) {
     const uniformSetters = getUniformSetters(g, ns, es, textures, framebuffers);
     switch (g.data.type) {
-      case "Screen Quad":
+      case GeometryNodeType.ScreenQuad:
         geo.push(new FullscreenQuad(gl, uniformSetters));
         break;
-      case "Model":
+      case GeometryNodeType.Model:
         let model = await loadOBJ(g.data.modelSrc as string);
         geo.push(new Mesh(gl, model, uniformSetters));
+        break;
+      case GeometryNodeType.SkyBox:
+        geo.push(new SkyBox(gl));
         break;
       default:
         throw new Error("Unsupported geometry type.");

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import PipelineEditor from "./lib/PipelineEditor/PipelineEditor.svelte";
+  import PipelineEditor from "./components/PipelineEditor/PipelineEditor.svelte";
   import {
     projects,
     selectedProject,
@@ -8,11 +8,11 @@
   } from "./project";
   import { FPS, GL_ERRORS } from "./utils";
 
-  import CodeEditor from "./lib/CodeEditor.svelte";
-  import ErrorList from "./lib/ErrorList.svelte";
-  import FileTree from "./lib/FileTree.svelte";
-  import GlWindow from "./lib/GlWindow.svelte";
-  import Goals from "./lib/Goals.svelte";
+  import CodeEditor from "./components/CodeEditor.svelte";
+  import ErrorList from "./components/ErrorList.svelte";
+  import FileTree from "./components/FileTree.svelte";
+  import GlWindow from "./components/GlWindow.svelte";
+  import Goals from "./components/Goals.svelte";
   import { SvelteFlowProvider } from "@xyflow/svelte";
 
   let _selected = $selectedProject;

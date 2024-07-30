@@ -30,6 +30,19 @@
       );
     }
   };
+
+  const shaderFileIcon = (type: ShaderType) => {
+    switch (type) {
+      case ShaderType.Frag:
+        return "icons/file-fragment-shader.svg";
+      case ShaderType.Vert:
+        return "icons/file-vertex-shader.svg";
+      case ShaderType.Comp:
+        return "icons/file-compute-shader.svg";
+      default:
+        return "icons/file-text.svg";
+    }
+  };
 </script>
 
 <button
@@ -67,13 +80,7 @@
           selected?.set(shader.filename);
         }}
       >
-        <img
-          class="icon"
-          src={shader.data.type === ShaderType.Frag
-            ? "icons/file-fragment-shader.svg"
-            : "icons/file-vertex-shader.svg"}
-          alt="file"
-        />
+        <img class="icon" src={shaderFileIcon(shader.data.type)} alt="file" />
         {shader.filename}
       </button>
     </li>
