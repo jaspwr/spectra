@@ -35,20 +35,22 @@
   });
 </script>
 
-<img class="close" on:click={onClose} src="icons/cross.svg" alt="close" />
 <div class="popout">
+  <img class="close" on:click={onClose} src="icons/cross.svg" alt="close" />
   <slot />
 </div>
+<div class="background" on:click={onClose}></div>
 
 <style>
   .popout {
     padding: 2rem;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    top: 40px;
+    left: 40px;
+    width: calc(100% - 180px);
+    height: calc(100% - 180px);
+    background-color: var(--bg-prim);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
     z-index: 1000;
   }
 
@@ -64,5 +66,14 @@
 
   .close:hover {
     filter: brightness(0.4);
+  }
+
+  .background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
   }
 </style>

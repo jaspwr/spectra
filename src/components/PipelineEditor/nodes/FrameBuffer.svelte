@@ -18,6 +18,8 @@
 <script lang="ts">
   import { TextureResizeMode } from "@/gl/texture";
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
+  import TypedHandle from "../TypedHandle.svelte";
+  import { KnownType } from "@/type";
 
   type $$Props = NodeProps;
 
@@ -37,7 +39,12 @@
 </script>
 
 <div class="pipeline-node">
-  <Handle type="target" position={Position.Left} id="in" />
+  <TypedHandle
+    type="target"
+    position={Position.Left}
+    id="in"
+    valueType={KnownType.Output}
+  />
   <strong>FrameBuf</strong>
   <div class="checkbox-and-label">
     <input type="checkbox" bind:checked={data.isDepthMap} />
@@ -48,7 +55,12 @@
       <option>{mode}</option>
     {/each}
   </select>
-  <Handle type="source" position={Position.Right} id="out" />
+  <TypedHandle
+    type="source"
+    position={Position.Right}
+    id="out"
+    valueType={KnownType.Texture2D}
+  />
 </div>
 
 <style>

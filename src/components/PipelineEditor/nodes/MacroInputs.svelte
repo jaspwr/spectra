@@ -28,10 +28,10 @@
 
   $: inputLabels = data.inputLabels;
 
-  const top = 55;
+  const top = 40;
 </script>
 
-<div class="inputs">
+<div class="inputs" style="height: {15 * $inputLabels.length + 40}px;">
   <strong>Macro Inputs</strong>
 
   {#each $inputLabels as label, i}
@@ -43,18 +43,19 @@
     />
     <div class="label" style={`top:${top + 15 * i}px;`}>{label}</div>
   {/each}
-
-  <style>
-    .label {
-      position: absolute;
-      font-size: 10px;
-      margin-left: -2px;
-    }
-  </style>
 </div>
 
 <style>
+  .label {
+    position: absolute;
+    font-size: 10px;
+    margin-left: -2px;
+    width: calc(100% - 20px);
+    display: flex;
+    justify-content: flex-end;
+  }
+
   .inputs {
-    width: 165px;
+    width: 140px;
   }
 </style>

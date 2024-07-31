@@ -33,17 +33,19 @@
 </script>
 
 <div>
+  <strong>Macro</strong>
+  <br />
   <select bind:value={data.name} class="macro-type">
     {#each macroNames as name}
       <option value={name}>{name}</option>
     {/each}
   </select>
-  <div class="macro" style="height:{($handles?.length ?? 0) * 20 + 45}px">
+  <div class="macro" style="height:{($handles?.length ?? 0) * 20 + 24}px">
     {#if macro === undefined}
       Invalid Macro
     {:else}
       <strong>{macro.name}</strong>
-      <InputHandleList handles={$handles?.map((h) => [h, h]) ?? []} top={75} />
+      <InputHandleList handles={$handles?.map((h) => [h, h]) ?? []} top={100} />
       <Handle type="source" position={Position.Right} />
     {/if}
   </div>
@@ -56,8 +58,7 @@
 
   .macro {
     padding: 5px;
-    background-color: var(--text-prim);
-    color: var(--bg-prim);
     width: 100px;
+    border: 1px solid var(--text-prim);
   }
 </style>

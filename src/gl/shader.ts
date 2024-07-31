@@ -21,7 +21,6 @@ import { hashString } from "@/utils";
 export enum ShaderType {
   Frag,
   Vert,
-  Geom,
   Comp,
 }
 
@@ -96,9 +95,6 @@ export class Shader {
         break;
       case "vert":
         type = ShaderType.Vert;
-        break;
-      case "geom":
-        type = ShaderType.Geom;
         break;
       case "comp":
         type = ShaderType.Comp;

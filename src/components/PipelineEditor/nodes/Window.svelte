@@ -17,6 +17,8 @@
 
 <script lang="ts">
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
+    import TypedHandle from "../TypedHandle.svelte";
+    import { KnownType } from "@/type";
 
   type $$Props = NodeProps;
 
@@ -25,7 +27,7 @@
 
 <div class="window">
   <strong>Window</strong>
-  <Handle type="target" position={Position.Left} id="in" />
+  <TypedHandle type="target" position={Position.Left} id="in" valueType={KnownType.Output} />
 </div>
 
 <style>

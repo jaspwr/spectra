@@ -20,6 +20,8 @@
   import { writable, type Writable } from "svelte/store";
   import { projects, selectedProject } from "@/project";
   import { GeometryNodeType } from "./geometry";
+    import TypedHandle from "../TypedHandle.svelte";
+    import { KnownType } from "@/type";
 
   type $$Props = NodeProps;
 
@@ -95,7 +97,7 @@
     </div>
   </div>
 
-  <Handle type="source" position={Position.Right} id="__output" />
+  <TypedHandle type="source" position={Position.Right} id="__output" valueType={KnownType.Geometry} />
 </div>
 
 <style>

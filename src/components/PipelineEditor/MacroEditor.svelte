@@ -100,8 +100,8 @@
 <style>
   .layout {
     position: static;
-    width: calc(100% - 100px);
-    height: calc(100% - 100px);
+    width: calc(100%);
+    height: calc(100%);
 
     display: grid;
     grid-template-columns: 1.8fr 210px;
@@ -117,11 +117,14 @@
 
   .file-tree {
     grid-area: file-tree;
+    background-color: var(--bg-sec);
   }
 
   .macro-meta {
+    padding: 20px;
     grid-area: macro-meta;
     overflow-y: scroll;
+    background-color: var(--bg-sec);
   }
 
   .macro-node-editor {

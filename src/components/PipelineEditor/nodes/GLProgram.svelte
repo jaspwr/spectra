@@ -18,22 +18,24 @@
 <script lang="ts">
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
     import InputHandleList from "../InputHandleList.svelte";
+    import TypedHandle from "../TypedHandle.svelte";
+    import { KnownType } from "@/type";
 
   type $$Props = NodeProps;
 
   export let data: {};
 
-  const handles: [string, string][] = [
-    ["vert", "Vert"],
-    ["frag", "Frag"],
-    ["geometry", "Geometry"],
+  const handles: [string, string, KnownType][] = [
+    ["vert", "Vert", KnownType.VertexShader],
+    ["frag", "Frag", KnownType.FragmentShader],
+    ["geometry", "Geometry", KnownType.Geometry],
   ];
 </script>
 
 <div class="program">
   <strong>GL Program</strong>
   <InputHandleList {handles} top={33} />
-  <Handle type="source" position={Position.Right} />
+  <TypedHandle type="source" position={Position.Right} valueType={KnownType.Output} />
 </div>
 
 <style>

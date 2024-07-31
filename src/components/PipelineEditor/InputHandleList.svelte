@@ -16,19 +16,34 @@
 -->
 
 <script lang="ts">
+  import type { PipelineConnectionType } from "@/type";
   import { Handle, Position } from "@xyflow/svelte";
+  import TypedHandle from "./TypedHandle.svelte";
 
-  export let handles: [string, string][];
+  export let handles: (
+    | [string, string]
+    | [string, string, PipelineConnectionType]
+  )[];
   export let top: number;
 </script>
 
-{#each handles as [id, label], i}
-  <Handle
-    type="target"
-    position={Position.Left}
-    style={`top:${top + 6 + 15 * i}px;`}
-    {id}
-  />
+{#each handles as [id, label, type], i}
+  {#if type !== undefined}
+    <TypedHandle
+      type="target"
+      position={Position.Left}
+      valueType={type}
+      top={top + 6 + 15 * i}
+      {id}
+    />
+  {:else}
+    <Handle
+      type="target"
+      position={Position.Left}
+      style={`top:${top + 6 + 15 * i}px;`}
+      {id}
+    />
+  {/if}
   <div class="label" style={`top:${top + 15 * i}px;`}>{label}</div>
 {/each}
 

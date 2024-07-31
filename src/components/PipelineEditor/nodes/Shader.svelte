@@ -20,6 +20,9 @@
   import { writable, type Writable } from "svelte/store";
   import { projects, selectedProject } from "@/project";
   import InputHandleList from "../InputHandleList.svelte";
+    import TypedHandle from "../TypedHandle.svelte";
+    import { KnownType, type PipelineConnectionType } from "@/type";
+    import { ShaderType } from "@/gl/shader";
 
   type $$Props = NodeProps;
 
@@ -37,9 +40,22 @@
     (s) => s.filename === data.shaderSourceFileName,
   );
 
-  let handles: [string, string][];
+  let handles: [string, string, PipelineConnectionType][];
   $: uniforms = shader?.data?.uniforms;
-  $: handles = ($uniforms ?? []).map((u) => [u.name, `${u.type} ${u.name}`]);
+  $: handles = ($uniforms ?? []).map((u) => [u.name, `${u.type} ${u.name}`, u.type]);
+
+  let valueType: PipelineConnectionType = "";
+  $: switch (shader?.data.type) {
+    case ShaderType.Vert:
+      valueType = KnownType.VertexShader;
+      break;
+    case ShaderType.Frag:
+      valueType = KnownType.FragmentShader;
+      break;
+    case ShaderType.Comp:
+      valueType = KnownType.ComputeShader;
+      break;
+  }
 </script>
 
 <div class="shader" style="height: {($uniforms?.length ?? 0) * 16.3 + 50}px">
@@ -57,7 +73,7 @@
   </div>
 
   <InputHandleList {handles} top={60} />
-  <Handle type="source" position={Position.Right} />
+  <TypedHandle type="source" position={Position.Right} valueType={valueType} />
 </div>
 
 <style>

@@ -37,10 +37,9 @@
   import Geometry from "./nodes/Geometry.svelte";
   import ContextMenu from "./ContextMenu.svelte";
   import Uniform from "./nodes/Uniform.svelte";
-    import MacroEditor from "./MacroEditor.svelte";
-    import MacroOutput from "./nodes/MacroOutput.svelte";
-    import MacroInputs from "./nodes/MacroInputs.svelte";
-    import MacroNode from "./nodes/MacroNode.svelte";
+  import MacroOutput from "./nodes/MacroOutput.svelte";
+  import MacroInputs from "./nodes/MacroInputs.svelte";
+  import MacroNode from "./nodes/MacroNode.svelte";
 
   const nodeTypes = {
     shader: Shader,

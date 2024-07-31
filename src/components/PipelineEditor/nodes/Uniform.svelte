@@ -24,6 +24,8 @@
     DEFAULT_PROJECTION,
     DEFAULT_VIEW,
   } from "./uniform";
+    import { KnownType } from "@/type";
+    import TypedHandle from "../TypedHandle.svelte";
 
   type $$Props = NodeProps;
 
@@ -47,6 +49,36 @@
       }
       break;
   }
+
+  let outputType = "";
+ 
+  $: switch (data.type) {
+    case UniformNodeType.Float:
+      outputType = KnownType.Float;
+      break;
+    case UniformNodeType.Time:
+      outputType = KnownType.Float;
+      break;
+    case UniformNodeType.Tex:
+      outputType = KnownType.Texture2D;
+      break;
+    case UniformNodeType.ViewMatrix:
+      outputType = KnownType.Mat4;
+      break;
+    case UniformNodeType.ProjectionMatrix:
+      outputType = KnownType.Mat4;
+      break;
+    case UniformNodeType.TranslationMatrix:
+      outputType = KnownType.Mat4;
+      break;
+    case UniformNodeType.Vec2:
+      outputType = KnownType.Vec2;
+      break;
+    case UniformNodeType.CubeMap:
+      outputType = KnownType.TextureCube;
+      break;
+  }
+
 </script>
 
 <div class="uniform">
@@ -145,7 +177,7 @@
     </div>
   </div>
 
-  <Handle type="source" position={Position.Right} />
+  <TypedHandle type="source" position={Position.Right} valueType={outputType} />
 </div>
 
 <style>
