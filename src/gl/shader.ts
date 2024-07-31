@@ -155,8 +155,6 @@ export function compileShader(
 ): WebGLShader {
   let type: number | undefined = undefined;
 
-  console.log(source.filename, source.data.type);
-
   switch (source.data.type) {
     case ShaderType.Frag:
       type = gl.FRAGMENT_SHADER;

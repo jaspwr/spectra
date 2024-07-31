@@ -91,7 +91,6 @@ export function expandMacros(nodes: SvelteFlowNode[], edges: SvelteFlowEdge[], m
           sourceHandle: e.sourceHandle,
           targetHandle: inputE.targetHandle,
         });
-        console.log(es);
       }
     }
 
@@ -104,7 +103,6 @@ export function expandMacros(nodes: SvelteFlowNode[], edges: SvelteFlowEdge[], m
           sourceHandle: outputE.sourceHandle,
           targetHandle: e.targetHandle,
         });
-        console.log(es);
       }
     }
   }
