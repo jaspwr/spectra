@@ -15,7 +15,16 @@
     "framebuffer",
     "uniform",
     "geometry",
+    "macro",
   ];
+
+
+  export let isMacro: boolean = false;
+
+  if (isMacro) {
+    nodeTypes.push("output");
+    nodeTypes.push("inputs");
+  }
 </script>
 
 <aside>

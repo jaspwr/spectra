@@ -9,30 +9,8 @@
     (p) => p.name === $selectedProject,
   )?.selectedShaderFile;
 
-  const removeSelectedFrom = (project: Project) => {
-    let index = project.shaderFiles.findIndex((s) => s.filename === $selected);
-
-    if (index !== -1) {
-      if (
-        window.confirm(
-          `Are you sure you want to delete ${project.shaderFiles[index].filename}?`,
-        ) === false
-      ) {
-        return;
-      }
-
-      project.shaderFiles.splice(index, 1);
-
-      selected?.set(
-        project.shaderFiles[index]?.filename ||
-          project.shaderFiles[index - 1]?.filename ||
-          "",
-      );
-    }
-  };
-
-  const shaderFileIcon = (type: ShaderType) => {
-    switch (type) {
+  const iconPath = (shader: Shader): string | null => {
+    switch (shader.data.type) {
       case ShaderType.Frag:
         return "icons/file-fragment-shader.svg";
       case ShaderType.Vert:
@@ -40,13 +18,15 @@
       case ShaderType.Comp:
         return "icons/file-compute-shader.svg";
       default:
-        return "icons/file-text.svg";
+        return null;
     }
   };
-</script>
 
-<button
-  on:click={() => {
+  const itemName = (shader: Shader): string => {
+    return shader.filename;
+  };
+
+  const add = () => {
     projects.update((p) => {
       let project = p.find((p) => p.name === $selectedProject);
       if (project) {
@@ -55,33 +35,55 @@
       }
       return p;
     });
-  }}
->
-  +
-</button>
-<button
-  on:click={() => {
+  };
+
+  const remove = () => {
     projects.update((p) => {
       let project = p.find((p) => p.name === $selectedProject);
       if (project) {
-        removeSelectedFrom(project);
+        let index = project.shaderFiles.findIndex(
+          (s) => s.filename === $selected,
+        );
+
+        if (index !== -1) {
+          if (
+            window.confirm(
+              `Are you sure you want to delete ${project.shaderFiles[index].filename}?`,
+            ) === false
+          ) {
+            return p;
+          }
+
+          project.shaderFiles.splice(index, 1);
+
+          selected?.set(
+            project.shaderFiles[index]?.filename ||
+              project.shaderFiles[index - 1]?.filename ||
+              "",
+          );
+        }
       }
       return p;
     });
-  }}
->
-  -
-</button>
+  };
+
+  const onSelect = (shader: Shader) => {
+    selected?.set(shader.filename);
+  };
+</script>
+
+<button on:click={add}> + </button>
+<button on:click={remove}> - </button>
 <ul>
   {#each list as shader}
-    <li class:selected={shader.filename === $selected}>
-      <button
-        on:click={() => {
-          selected?.set(shader.filename);
-        }}
-      >
-        <img class="icon" src={shaderFileIcon(shader.data.type)} alt="file" />
-        {shader.filename}
+    <li class:selected={itemName(shader) === $selected}>
+      <button on:click={() => onSelect(shader)}>
+        {#if iconPath(shader) !== null}
+          <img class="icon" src={iconPath(shader)} alt="file" />
+        {:else}
+          <img class="icon" src="icons/file.svg" alt="file" />
+        {/if}
+        {itemName(shader)}
       </button>
     </li>
   {/each}

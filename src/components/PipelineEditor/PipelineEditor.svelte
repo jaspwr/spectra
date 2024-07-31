@@ -20,6 +20,10 @@
   import Geometry from "./nodes/Geometry.svelte";
   import ContextMenu from "./ContextMenu.svelte";
   import Uniform from "./nodes/Uniform.svelte";
+    import MacroEditor from "./MacroEditor.svelte";
+    import MacroOutput from "./nodes/MacroOutput.svelte";
+    import MacroInputs from "./nodes/MacroInputs.svelte";
+    import MacroNode from "./nodes/MacroNode.svelte";
 
   const nodeTypes = {
     shader: Shader,
@@ -28,10 +32,19 @@
     framebuffer: FrameBuffer,
     geometry: Geometry,
     uniform: Uniform,
+    macro: MacroNode,
   };
 
   export let nodes: Writable<Node[]>;
   export let edges: Writable<Edge[]>;
+  export let isMacro: boolean = false;
+
+  if (isMacro) {
+    nodeTypes["output"] = MacroOutput;
+    nodeTypes["inputs"] = MacroInputs;
+  }
+
+  let editingMacro: boolean = true;
 
   const { screenToFlowPosition } = useSvelteFlow();
 
@@ -131,7 +144,7 @@
       />
     {/if}
   </SvelteFlow>
-  <SideBar />
+  <SideBar {isMacro} />
 </div>
 
 <style>

@@ -11,6 +11,7 @@ import { createCubeMapTexture, loadImageTexture, TextureResizeMode } from "./gl/
 import { FullscreenQuad, Mesh, SkyBox, type Geometry } from "./gl/geometry";
 import { GLProgram } from "./gl/glProgram";
 import { UniformFloatSetter, UniformProjectionSetter, UniformTextureSetter, UniformTimeSetter, UniformTranslationSetter, UniformVec2Setter, UniformViewSetter, UniformWindowSizeSetter, type UniformSetter } from "./gl/uniform";
+import { expandMacros } from "./components/PipelineEditor/macro";
 
 export class PipeLine {
   private steps: RenderStep[] = [];
@@ -32,6 +33,10 @@ export class PipeLine {
 
       if (nodes === undefined || edges === undefined)
         throw ["Error in graph data"];
+
+      const { ns, es } = expandMacros(nodes, edges, project.macros);
+      nodes = ns;
+      edges = es;
 
       const framebuffers = createFramebuffers(nodes, gl);
       const textures = createTextures(nodes, gl);
@@ -123,7 +128,8 @@ function getUniformSetters(
     .filter((e) => e.target === self.id)
     .map((e) => {
       let uniformName = e.targetHandle!;
-      let uniformNode = ns.find((n) => n.id === e.source)!;
+      let uniformNode = ns.find((n) => n.id === e.source);
+      if (uniformNode === undefined) return undefined;
 
       switch (uniformNode.type) {
         case "uniform":
@@ -137,7 +143,7 @@ function getUniformSetters(
         default:
           throw new Error("Unsupported uniform type");
       }
-    });
+    }).filter((u) => u !== undefined);
 }
 
 function handleUniformNode(
@@ -257,6 +263,7 @@ async function createRenderStep(
   } else {
     throw new Error("Invalid output.");
   }
+
 
   const vert = ns.find(
     (ns) => ns.id === targetedBy.find((e) => e.targetHandle === "vert")?.source

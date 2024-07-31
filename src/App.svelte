@@ -14,6 +14,8 @@
   import GlWindow from "./components/GlWindow.svelte";
   import Goals from "./components/Goals.svelte";
   import { SvelteFlowProvider } from "@xyflow/svelte";
+  import MacroEditor from "./components/PipelineEditor/MacroEditor.svelte";
+  import Popout from "./components/Popout.svelte";
 
   let _selected = $selectedProject;
   $: selectedProject.set(_selected);
@@ -54,6 +56,8 @@
     const serialized = serialize(project);
     localStorage.setItem(project.name, serialized);
   };
+
+  let editingMacro = false;
 </script>
 
 <div class="layout">
@@ -86,6 +90,11 @@
     <div class="top-bar-item checkbox-and-label">
       <input type="checkbox" bind:checked={editorVimMode} />
       Vim Mode
+    </div>
+    <div class="top-bar">
+      <button on:click={() => (editingMacro = true)}>
+        <div class="button-contents">Configure Macros</div>
+      </button>
     </div>
   </div>
   <div class="gl-window">
@@ -121,6 +130,16 @@
   </div>
 </div>
 
+{#if editingMacro}
+  <Popout
+    onClose={() => {
+      editingMacro = false;
+    }}
+  >
+    <MacroEditor />
+  </Popout>
+{/if}
+
 <style>
   .layout {
     position: absolute;
@@ -129,7 +148,7 @@
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-columns: 1.2fr 1.8fr 0.4fr;
+    grid-template-columns: 1.2fr 1.8fr 190px;
     grid-template-rows: 0.12fr 1.5fr 1.4fr;
     grid-auto-columns: 1fr;
     grid-auto-rows: 1fr;

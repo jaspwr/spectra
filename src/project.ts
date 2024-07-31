@@ -1,10 +1,10 @@
 import { writable, type Writable } from "svelte/store";
 import { deserializeShader, Shader, type SerializedShader } from "./gl/shader";
 import type {
-  Node,
   Edge as SvelteFlowEdge,
   Node as SvelteFlowNode,
 } from "@xyflow/svelte";
+import type { Macro } from "./components/PipelineEditor/macro";
 
 const _projects: Project[] = [];
 _projects.push(
@@ -53,7 +53,7 @@ for (let project of _projects) {
 
 export const projects = writable<Project[]>(_projects);
 
-// The UID of the selected project
+// The filename of the selected project
 export const selectedProject = writable<string>("Simple Frag");
 
 export interface Project {
@@ -62,6 +62,7 @@ export interface Project {
   shaderFiles: Shader[];
   selectedShaderFile?: Writable<string>;
   pipelineGraph: PipelineGraph;
+  macros: Macro[];
 }
 
 export interface Goal {
@@ -74,19 +75,13 @@ export interface PipelineGraph {
   edges: Writable<SvelteFlowEdge[]>;
 }
 
-function newPipelineGraph(): PipelineGraph {
-  return {
-    nodes: writable([]),
-    edges: writable([]),
-  };
-}
-
 export function serialize(project: Project): string {
   const serialized: SerializedProject = {
     name: project.name,
     goals: [...project.goals],
     shaders: project.shaderFiles.map((s) => s.serialize()),
     pipelineGraph: serializePipelineGraph(project.pipelineGraph),
+    macros: project.macros.map(m => serializeMacro(m)),
   };
 
   return JSON.stringify(serialized);
@@ -100,6 +95,7 @@ export function deserialize(json: string): Project {
     goals: serialized.goals,
     shaderFiles: serialized.shaders.map((s) => deserializeShader(s)),
     pipelineGraph: deserializePipelineGraph(serialized.pipelineGraph),
+    macros: (serialized.macros ?? []).map(m => deserializeMacro(m)),
   };
 }
 
@@ -108,6 +104,13 @@ interface SerializedProject {
   shaders: SerializedShader[];
   goals: Goal[];
   pipelineGraph: SerializedPipelineGraph;
+  macros: SerializedMacro[];
+}
+
+interface SerializedMacro {
+  name: string;
+  inputLabels: string[];
+  graph: SerializedPipelineGraph;
 }
 
 interface SerializedPipelineGraph {
@@ -143,4 +146,52 @@ function deserializePipelineGraph(
   let edges = writable(serialized.edges);
 
   return { nodes, edges };
+}
+
+function serializeMacro(macro: Macro): SerializedMacro {
+  // Evil value stealing
+  let nodes: SvelteFlowNode[] | undefined, edges: SvelteFlowEdge[] | undefined, inputLabels: string[] | undefined;
+  macro.nodes.update((n) => {
+    nodes = [...n];
+    return n;
+  });
+  macro.edges.update((e) => {
+    edges = [...e];
+    return e;
+  });
+  macro.inputLabels.update((l) => {
+    inputLabels = [...l];
+    return l;
+  });
+
+  if (nodes === undefined || edges === undefined || inputLabels === undefined)
+    throw new Error("Error in macro data");
+
+  return {
+    name: macro.name,
+    inputLabels,
+    graph: {
+      nodes: nodes,
+      edges: edges,
+    },
+  };
+}
+
+function deserializeMacro(serialized: SerializedMacro): Macro {
+  let inputLabels = writable(serialized.inputLabels);
+  let nodes = writable(serialized.graph.nodes.map(n => {
+    if (n.type === "inputs") {
+      n.data.inputLabels = inputLabels;
+    }
+    return n;
+  }));
+  let edges = writable(serialized.graph.edges);
+
+
+  return {
+    name: serialized.name,
+    nodes,
+    edges,
+    inputLabels,
+  };
 }

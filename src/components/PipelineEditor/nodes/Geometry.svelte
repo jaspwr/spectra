@@ -27,8 +27,6 @@
   }
 
   const types = Object.values(GeometryNodeType);
-
-  $: console.log(data.uniformOverrides);
 </script>
 
 <div>
