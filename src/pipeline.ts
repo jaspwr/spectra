@@ -1,3 +1,20 @@
+/**
+ * This file is part of Spectra.
+ *
+ * Spectra is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * Spectra is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License 
+ * along with Spectra. If not, see <https://www.gnu.org/licenses/>.
+ * */
+
 import type { Edge, Node } from "@xyflow/svelte";
 import type { Project } from "./project";
 import { Shader } from "./gl/shader";
@@ -11,7 +28,7 @@ import { createCubeMapTexture, loadImageTexture, TextureResizeMode } from "./gl/
 import { FullscreenQuad, Mesh, SkyBox, type Geometry } from "./gl/geometry";
 import { GLProgram } from "./gl/glProgram";
 import { UniformFloatSetter, UniformProjectionSetter, UniformTextureSetter, UniformTimeSetter, UniformTranslationSetter, UniformVec2Setter, UniformViewSetter, UniformWindowSizeSetter, type UniformSetter } from "./gl/uniform";
-import { expandMacros } from "./components/PipelineEditor/macro";
+import { expandMacros } from "@/macro";
 
 export class PipeLine {
   private steps: RenderStep[] = [];

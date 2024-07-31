@@ -1,10 +1,27 @@
+/**
+ * This file is part of Spectra.
+ *
+ * Spectra is free software: you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ *
+ * Spectra is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License 
+ * along with Spectra. If not, see <https://www.gnu.org/licenses/>.
+ * */
+
 import { writable, type Writable } from "svelte/store";
 import { deserializeShader, Shader, type SerializedShader } from "./gl/shader";
 import type {
   Edge as SvelteFlowEdge,
   Node as SvelteFlowNode,
 } from "@xyflow/svelte";
-import type { Macro } from "./components/PipelineEditor/macro";
+import type { Macro } from "@/macro";
 
 const _projects: Project[] = [];
 _projects.push(
