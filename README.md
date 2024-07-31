@@ -1,3 +1,4 @@
+# This project is unfinished
 <p align="center">
     <img src="public/spectra.png" alt="Spectra" width="300px">
 </p>
