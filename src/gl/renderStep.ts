@@ -26,16 +26,23 @@ export class RenderStep {
   geometry: Geometry[];
   uniformSetters: UniformSetter[];
 
+  public outputId: string = "";
+  public dependencies: string[] = [];
+
   public constructor(
     program: GLProgram,
     framebuffer: FrameBufferTexture | null,
     geometry: Geometry[],
-    uniformSetters: UniformSetter[]
+    uniformSetters: UniformSetter[],
+    dependencies: string[],
+    outputId: string
   ) {
     this.program = program;
     this.framebuffer = framebuffer;
     this.geometry = geometry;
     this.uniformSetters = uniformSetters;
+    this.dependencies = dependencies;
+    this.outputId = outputId;
   }
 
   public render(gl: WebGLRenderingContext, deltaTime: number) {

@@ -65,10 +65,16 @@ export class PipeLine {
         );
 
       Promise.all(steps).then((steps) => {
-        // Sort
-        console.log(steps);
-
-        this.steps = steps;
+        this.steps = steps.sort((a, b) => {
+          if (a.dependencies.includes(b.outputId)) {
+            return 1;
+          } else if (b.dependencies.includes(a.outputId)) {
+            return -1;
+          } else {
+            return 0;
+          }
+        });
+        console.log(this.steps);
       }).catch((e) => {
         eprintln(e);
       });
@@ -117,7 +123,12 @@ function handleShader(
   uniformSetters: UniformSetter[];
   dependencies: string[];
 } {
-  let dependencies: string[] = [];
+  let dependencies: string[] = es
+    .filter((e) => e.target === shader.id)
+    .map((e) => ns.find(n => n.id === e.source))
+    .filter((n) => n !== undefined && n.type === "framebuffer")
+    .map((n) => n!.id);
+
   let uniformSetters = getUniformSetters(shader, ns, es, textures, framebuffers);
 
   return {
@@ -327,5 +338,5 @@ async function createRenderStep(
 
   let program = new GLProgram(gl, [vs, fs]);
 
-  return new RenderStep(program, output, geo, uniformSetters);
+  return new RenderStep(program, output, geo, uniformSetters, dependencies, outputNode.id);
 }
