@@ -177,7 +177,7 @@
     </div>
   </div>
 
-  <TypedHandle type="source" position={Position.Right} valueType={outputType} />
+  <TypedHandle type="source" position={Position.Right} valueType={outputType} id="__output" />
 </div>
 
 <style>

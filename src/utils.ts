@@ -16,6 +16,7 @@
  * */
 
 import { type Writable, writable } from "svelte/store";
+import type { PipelineConnectionType } from "./type";
 
 export function hashString(str: string): number {
   var hash = 0;
@@ -97,3 +98,17 @@ export function filterNonDigits(word: string): string {
 export const GL_ERRORS: Writable<string[]> = writable([]);
 export const FPS: Writable<number> = writable(0);
 export const PLAYING: Writable<boolean> = writable(false);
+
+const NODE_HANDLE_TYPES: Record<string, PipelineConnectionType> = {};
+
+export function registerNodeHandleType(
+  nodeId: string,
+  handle: string,
+  type: PipelineConnectionType
+) {
+  NODE_HANDLE_TYPES[`${nodeId}-${handle}`] = type;
+}
+
+export function getNodeHandleType(nodeId: string, handle: string) {
+  return NODE_HANDLE_TYPES[`${nodeId}-${handle}`];
+}

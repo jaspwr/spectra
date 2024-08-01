@@ -35,7 +35,7 @@
 <div class="program">
   <strong>GL Program</strong>
   <InputHandleList {handles} top={33} />
-  <TypedHandle type="source" position={Position.Right} valueType={KnownType.Output} />
+  <TypedHandle type="source" position={Position.Right} valueType={KnownType.Output} id="__output" />
 </div>
 
 <style>

@@ -26,6 +26,7 @@
     useSvelteFlow,
     useEdges,
     type Edge,
+    type IsValidConnection,
   } from "@xyflow/svelte";
 
   import "@xyflow/svelte/dist/style.css";
@@ -40,6 +41,7 @@
   import MacroOutput from "./nodes/MacroOutput.svelte";
   import MacroInputs from "./nodes/MacroInputs.svelte";
   import MacroNode from "./nodes/MacroNode.svelte";
+  import { getNodeHandleType } from "@/utils";
 
   const nodeTypes = {
     shader: Shader,
@@ -132,6 +134,23 @@
   function handlePaneClick() {
     menu = null;
   }
+
+  const isValidConnection: IsValidConnection = (connection) => {
+    // Cannot connect to self
+    if (connection.source === connection.target) return false;
+
+    // Allow if no labels are set
+    if (!connection.sourceHandle || !connection.targetHandle) return true;
+
+    // Get the types of the source and target handles
+    const from = getNodeHandleType(connection.source, connection.sourceHandle);
+    const to = getNodeHandleType(connection.target, connection.targetHandle);
+
+    // Allow if no types set
+    if (!from || !to) return true;
+
+    return from === to;
+  };
 </script>
 
 <div class="container">
@@ -146,6 +165,7 @@
     on:paneclick={handlePaneClick}
     on:dragover={onDragOver}
     on:drop={onDrop}
+    {isValidConnection}
   >
     <Controls />
     <Background variant={BackgroundVariant.Dots} />
