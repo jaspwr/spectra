@@ -77,6 +77,9 @@
     case UniformNodeType.CubeMap:
       outputType = KnownType.TextureCube;
       break;
+    case UniformNodeType.WindowSize:
+      outputType = KnownType.Vec2;
+      break;
   }
 
 </script>
