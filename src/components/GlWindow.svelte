@@ -32,7 +32,7 @@
 
   let canv: HTMLCanvasElement;
 
-  let gl: WebGLRenderingContext | null = null;
+  let gl: WebGL2RenderingContext | null = null;
 
   let lastTime = 0;
 
@@ -81,16 +81,16 @@
   };
 
   onMount(() => {
-    gl = canv.getContext("webgl");
+    gl = canv.getContext("webgl2");
     if (!gl) throw new Error("WebGL not supported");
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
 
-    const ext = gl.getExtension("WEBGL_depth_texture");
-    if (!ext) {
-      return alert("WEBGL_depth_texture not supported. Try another browser.");
-    }
+    // const ext = gl.getExtension("WEBGL_depth_texture");
+    // if (!ext) {
+    //   return alert("WEBGL_depth_texture not supported. Try another browser.");
+    // }
 
     resize();
 

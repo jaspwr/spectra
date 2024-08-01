@@ -33,7 +33,7 @@ import { expandMacros } from "@/macro";
 export class PipeLine {
   private steps: RenderStep[] = [];
 
-  public constructor(project: Project, gl: WebGLRenderingContext) {
+  public constructor(project: Project, gl: WebGL2RenderingContext) {
     let errors: string[] = [];
 
     try {
@@ -83,7 +83,7 @@ export class PipeLine {
     }
   }
 
-  public render(gl: WebGLRenderingContext, deltaTime: number) {
+  public render(gl: WebGL2RenderingContext, deltaTime: number) {
     for (let step of this.steps) {
       step.render(gl, deltaTime);
     }
@@ -219,7 +219,7 @@ function handleUniformNode(
 
 function createFramebuffers(
   ns: Node[],
-  gl: WebGLRenderingContext
+  gl: WebGL2RenderingContext
 ): Record<string, FrameBufferTexture> {
   return ns.filter((n) => n.type === "framebuffer")
     .map((n) => [n.id, new FrameBufferTexture(
@@ -236,7 +236,7 @@ function createFramebuffers(
 
 function createTextures(
   ns: Node[],
-  gl: WebGLRenderingContext
+  gl: WebGL2RenderingContext
 ): Record<string, WebGLTexture> {
   const uniformNodes = ns.filter((n) => n.type === "uniform");
   const textureNodes = uniformNodes.filter((n) => n.data.type === UniformNodeType.Tex);
@@ -264,7 +264,7 @@ async function createRenderStep(
   shaders: Shader[],
   textures: Record<string, WebGLTexture>,
   framebuffers: Record<string, FrameBufferTexture>,
-  gl: WebGLRenderingContext
+  gl: WebGL2RenderingContext
 ): Promise<RenderStep> {
   const id = programNode.id;
   const targetedBy = es.filter((e) => e.target === id);

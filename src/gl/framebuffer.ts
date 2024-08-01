@@ -28,7 +28,7 @@ export class FrameBufferTexture {
   public width: number = 0;
 
   public constructor(
-    gl: WebGLRenderingContext,
+    gl: WebGL2RenderingContext,
     height: number,
     width: number,
     resizeMode: TextureResizeMode,
@@ -40,7 +40,7 @@ export class FrameBufferTexture {
     this.width = width;
   }
 
-  public resize(gl: WebGLRenderingContext, height: number, width: number) {
+  public resize(gl: WebGL2RenderingContext, height: number, width: number) {
     if (height === this.height && width === this.width) {
       return;
     }
@@ -49,7 +49,7 @@ export class FrameBufferTexture {
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
-      this.isDepthMap ? gl.DEPTH_COMPONENT : gl.RGBA,
+      this.isDepthMap ? gl.DEPTH_COMPONENT24 : gl.RGBA,
       width,
       height,
       0,
@@ -67,7 +67,7 @@ export class FrameBufferTexture {
     this.width = width;
   }
 
-  private createNew(gl: WebGLRenderingContext, height: number, width: number, resizeMode: TextureResizeMode, isDepthMap: boolean): [WebGLFramebuffer, WebGLTexture, WebGLRenderbuffer] {
+  private createNew(gl: WebGL2RenderingContext, height: number, width: number, resizeMode: TextureResizeMode, isDepthMap: boolean): [WebGLFramebuffer, WebGLTexture, WebGLRenderbuffer] {
     const texture = gl.createTexture();
 
     if (texture === null) {
@@ -81,7 +81,7 @@ export class FrameBufferTexture {
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
-      isDepthMap ? gl.DEPTH_COMPONENT : gl.RGBA,
+      isDepthMap ? gl.DEPTH_COMPONENT24 : gl.RGBA,
       width,
       height,
       0,

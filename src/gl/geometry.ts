@@ -22,7 +22,7 @@ import { bindVBOToAttribute, createVBO } from "./utils";
 
 export abstract class Geometry {
   public uniformOverrides: UniformSetter[];
-  abstract render(gl: WebGLRenderingContext, program: GLProgram): void;
+  abstract render(gl: WebGL2RenderingContext, program: GLProgram): void;
 
   constructor(uniformOverrides: UniformSetter[]) {
     this.uniformOverrides = uniformOverrides;
@@ -35,7 +35,7 @@ export class Mesh extends Geometry {
   uv: WebGLBuffer;
   vertexCount: number;
 
-  public constructor(gl: WebGLRenderingContext, model: Model, uniformOverrides: UniformSetter[]) {
+  public constructor(gl: WebGL2RenderingContext, model: Model, uniformOverrides: UniformSetter[]) {
     super(uniformOverrides);
     let verticesFlat: number[] = [];
     let normalsFlat: number[] = [];
@@ -56,7 +56,7 @@ export class Mesh extends Geometry {
     this.vertexCount = model.faces.length * 3;
   }
 
-  public render(gl: WebGLRenderingContext, program: GLProgram) {
+  public render(gl: WebGL2RenderingContext, program: GLProgram) {
     bindVBOToAttribute(gl, this.vertices, program.attributes["position"], 3);
     bindVBOToAttribute(gl, this.normals, program.attributes["normal"], 3);
     bindVBOToAttribute(gl, this.uv, program.attributes["uv"], 2);
@@ -68,7 +68,7 @@ export class Mesh extends Geometry {
 export class FullscreenQuad extends Geometry {
   vbo: WebGLBuffer;
 
-  public constructor(gl: WebGLRenderingContext, uniformOverrides: UniformSetter[]) {
+  public constructor(gl: WebGL2RenderingContext, uniformOverrides: UniformSetter[]) {
     super(uniformOverrides);
 
     const vertices = new Float32Array([
@@ -80,7 +80,7 @@ export class FullscreenQuad extends Geometry {
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
   }
 
-  public render(gl: WebGLRenderingContext, program: GLProgram) {
+  public render(gl: WebGL2RenderingContext, program: GLProgram) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
 
     gl.enableVertexAttribArray(program.attributes["position"]);
@@ -102,7 +102,7 @@ export class SkyBox extends Geometry {
   ebo: WebGLBuffer;
   vertexCount: number = 36;
 
-  public constructor(gl: WebGLRenderingContext) {
+  public constructor(gl: WebGL2RenderingContext) {
     super([]);
 
     // prettier-ignore
@@ -132,7 +132,7 @@ export class SkyBox extends Geometry {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
   }
 
-  public render(gl: WebGLRenderingContext, program: GLProgram) {
+  public render(gl: WebGL2RenderingContext, program: GLProgram) {
     bindVBOToAttribute(gl, this.vbo, program.attributes["position"], 3);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ebo);
