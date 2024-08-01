@@ -18,7 +18,7 @@
 
   const nodeId = getContext<string>("svelteflow__node_id");
 
-  if (id !== undefined) {
+  $: if (id !== undefined) {
     registerNodeHandleType(nodeId, id, valueType);
   }
 </script>
