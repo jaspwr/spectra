@@ -21,6 +21,7 @@
     projects,
     selectedProject,
     serialize,
+    toUrl,
     type Project,
   } from "./project";
   import { FPS, GL_ERRORS } from "./utils";
@@ -33,6 +34,9 @@
   import { SvelteFlowProvider } from "@xyflow/svelte";
   import MacroEditor from "./components/PipelineEditor/MacroEditor.svelte";
   import Popout from "./components/Popout.svelte";
+  import { URL_PARAMETERS } from "./url";
+
+  const isEmbedded = URL_PARAMETERS.isEmbedded;
 
   let _selected = $selectedProject;
   $: selectedProject.set(_selected);
@@ -72,80 +76,110 @@
     if (project === undefined) return;
     const serialized = serialize(project);
     localStorage.setItem(project.name, serialized);
+    console.log(serialized);
+    const url = toUrl(project);
+    console.log(url);
+    console.log("url length", url.length, "uncompressed lenght", serialized.length);
+    console.log("compression ratio", url.length / serialized.length);
   };
 
   let editingMacro = false;
 </script>
 
-<div class="layout">
-  <div class="top-bar">
-    <div class="top-bar-item" style="padding-left: 1rem">
-      FPS: <span class="fps">{$FPS.toFixed(2)}</span>
-    </div>
-    <div class="top-bar-item">
+{#if isEmbedded}
+  <div class="embed-layout">
+    <div class="embed-top-bar">
       <button on:click={recompile}>
         <div class="button-contents">
           <img class="icon" src="icons/cog.svg" alt="recompile" />
           Recompile
         </div>
       </button>
-      <button on:click={save}>
-        <div class="button-contents">
-          <img class="icon" src="icons/floppy.svg" alt="save" />
-          Save
-        </div>
-      </button>
+      <a href={"todo"} target="_blank"> View full project </a>
     </div>
-    <div class="top-bar-item">
-      Project:
-      <select bind:value={_selected}>
-        {#each $projects as project}
-          <option>{project.name}</option>
-        {/each}
-      </select>
+    <div class="embed-gl-window">
+      <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
+        <GlWindow project={displayingProject} />
+      </div>
+      {#if $GL_ERRORS.length > 0}
+        <ErrorList errors={$GL_ERRORS} />
+      {/if}
     </div>
-    <div class="top-bar-item checkbox-and-label">
-      <input type="checkbox" bind:checked={editorVimMode} />
-      Vim Mode
+    <div class="embed-code-editor">
+      <CodeEditor vimMode={editorVimMode} />
     </div>
+  </div>
+{:else}
+  <div class="layout">
     <div class="top-bar">
-      <button on:click={() => (editingMacro = true)}>
-        <div class="button-contents">Configure Macros</div>
-      </button>
+      <div class="top-bar-item" style="padding-left: 1rem">
+        FPS: <span class="fps">{$FPS.toFixed(2)}</span>
+      </div>
+      <div class="top-bar-item">
+        <button on:click={recompile}>
+          <div class="button-contents">
+            <img class="icon" src="icons/cog.svg" alt="recompile" />
+            Recompile
+          </div>
+        </button>
+        <button on:click={save}>
+          <div class="button-contents">
+            <img class="icon" src="icons/floppy.svg" alt="save" />
+            Save
+          </div>
+        </button>
+      </div>
+      <div class="top-bar-item">
+        Project:
+        <select bind:value={_selected}>
+          {#each $projects as project}
+            <option>{project.name}</option>
+          {/each}
+        </select>
+      </div>
+      <div class="top-bar-item checkbox-and-label">
+        <input type="checkbox" bind:checked={editorVimMode} />
+        Vim Mode
+      </div>
+      <div class="top-bar">
+        <button on:click={() => (editingMacro = true)}>
+          <div class="button-contents">Configure Macros</div>
+        </button>
+      </div>
     </div>
-  </div>
-  <div class="gl-window">
-    <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
-      <GlWindow project={displayingProject} />
+    <div class="gl-window">
+      <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
+        <GlWindow project={displayingProject} />
+      </div>
+      {#if $GL_ERRORS.length > 0}
+        <ErrorList errors={$GL_ERRORS} />
+      {/if}
     </div>
-    {#if $GL_ERRORS.length > 0}
-      <ErrorList errors={$GL_ERRORS} />
-    {/if}
-  </div>
-  <div class="code-editor">
-    <CodeEditor vimMode={editorVimMode} />
-  </div>
-  <div class="pipeline-editor">
-    {#if project !== undefined && !forcingRerender}
-      <SvelteFlowProvider>
-        <PipelineEditor
-          nodes={project.pipelineGraph.nodes}
-          edges={project.pipelineGraph.edges}
-        />
-      </SvelteFlowProvider>
-    {/if}
-  </div>
+    <div class="code-editor">
+      <CodeEditor vimMode={editorVimMode} />
+    </div>
+    <div class="pipeline-editor">
+      {#if project !== undefined && !forcingRerender}
+        <SvelteFlowProvider>
+          <PipelineEditor
+            nodes={project.pipelineGraph.nodes}
+            edges={project.pipelineGraph.edges}
+          />
+        </SvelteFlowProvider>
+      {/if}
+    </div>
 
-  <div class="sidebar">
-    <div class="file-tree">
-      <FileTree />
-    </div>
-    <div class="goals">
-      <hr />
-      <Goals />
+    <div class="sidebar">
+      <div class="file-tree">
+        <FileTree />
+      </div>
+      <div class="goals">
+        <hr />
+        <Goals />
+      </div>
     </div>
   </div>
-</div>
+{/if}
 
 {#if editingMacro}
   <Popout
@@ -158,6 +192,38 @@
 {/if}
 
 <style>
+  .embed-layout {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1.1fr 1.3fr;
+    grid-template-rows: 0.2fr 1.8fr;
+    grid-auto-columns: 1fr;
+    grid-auto-rows: 1fr;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "embed-top-bar embed-top-bar"
+      "embed-gl-window embed-code-editor";
+  }
+
+  .embed-top-bar {
+    grid-area: embed-top-bar;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .embed-gl-window {
+    grid-area: embed-gl-window;
+  }
+
+  .embed-code-editor {
+    grid-area: embed-code-editor;
+  }
+
   .layout {
     position: absolute;
     left: 0;
