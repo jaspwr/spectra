@@ -24,7 +24,7 @@
     toUrl,
     type Project,
   } from "./project";
-  import { FPS, GL_ERRORS } from "./utils";
+  import { FPS, GL_ERRORS, PLAYING } from "./utils";
 
   import CodeEditor from "./components/CodeEditor.svelte";
   import ErrorList from "./components/ErrorList.svelte";
@@ -34,7 +34,9 @@
   import { SvelteFlowProvider } from "@xyflow/svelte";
   import MacroEditor from "./components/PipelineEditor/MacroEditor.svelte";
   import Popout from "./components/Popout.svelte";
-  import { URL_PARAMETERS } from "./url";
+  import { nonEmbedUrl, URL_PARAMETERS } from "./url";
+  import PlayPauseButton from "./components/PlayPauseButton.svelte";
+  import EmbedCreator from "./components/EmbedCreator.svelte";
 
   const isEmbedded = URL_PARAMETERS.isEmbedded;
 
@@ -79,30 +81,59 @@
     console.log(serialized);
     const url = toUrl(project);
     console.log(url);
-    console.log("url length", url.length, "uncompressed lenght", serialized.length);
+    console.log(
+      "url length",
+      url.length,
+      "uncompressed lenght",
+      serialized.length,
+    );
     console.log("compression ratio", url.length / serialized.length);
   };
 
-  let editingMacro = false;
+  enum AppState {
+    Normal,
+    DevelopmentStateInfo,
+    EditingMacro,
+    CreatingEmbed,
+  }
+
+  let appState = URL_PARAMETERS.isEmbedded ? AppState.Normal : AppState.DevelopmentStateInfo;
+
+  let started = false;
 </script>
 
 {#if isEmbedded}
   <div class="embed-layout">
     <div class="embed-top-bar">
-      <button on:click={recompile}>
-        <div class="button-contents">
-          <img class="icon" src="icons/cog.svg" alt="recompile" />
-          Recompile
+      <div style="display: flex; flex-direction: row; align-items: center;">
+        <button on:click={recompile}>
+          <div class="button-contents">
+            <img class="icon" src="icons/cog.svg" alt="recompile" />
+            Recompile
+          </div>
+        </button>
+        <div style="padding-left: 8px">
+          <PlayPauseButton />
         </div>
-      </button>
-      <a href={"todo"} target="_blank"> View full project </a>
+      </div>
+      <div style="display: flex; align-items: center; padding-right: 1em">
+        <a href={nonEmbedUrl()} target="_blank"> View full project </a>
+      </div>
     </div>
     <div class="embed-gl-window">
-      <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
-        <GlWindow project={displayingProject} />
-      </div>
-      {#if $GL_ERRORS.length > 0}
-        <ErrorList errors={$GL_ERRORS} />
+      {#if !URL_PARAMETERS.startIdle || started}
+        <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
+          <GlWindow project={displayingProject} />
+        </div>
+        {#if $GL_ERRORS.length > 0}
+          <ErrorList errors={$GL_ERRORS} />
+        {/if}
+      {:else}
+        <div class="gl-container">
+          <button class="centered" on:click={() => (started = true)}>
+            <h1>Click to start</h1>
+          </button>
+        </div>
       {/if}
     </div>
     <div class="embed-code-editor">
@@ -114,6 +145,9 @@
     <div class="top-bar">
       <div class="top-bar-item" style="padding-left: 1rem">
         FPS: <span class="fps">{$FPS.toFixed(2)}</span>
+      </div>
+      <div class="top-bar-item">
+        <PlayPauseButton />
       </div>
       <div class="top-bar-item">
         <button on:click={recompile}>
@@ -142,8 +176,14 @@
         Vim Mode
       </div>
       <div class="top-bar">
-        <button on:click={() => (editingMacro = true)}>
+        <button on:click={() => (appState = AppState.EditingMacro)}>
           <div class="button-contents">Configure Macros</div>
+        </button>
+        <button
+          on:click={() => (appState = AppState.CreatingEmbed)}
+          style="margin-left: 7px;"
+        >
+          <div class="button-contents">Create Embed</div>
         </button>
       </div>
     </div>
@@ -181,13 +221,29 @@
   </div>
 {/if}
 
-{#if editingMacro}
+{#if appState === AppState.EditingMacro}
   <Popout
     onClose={() => {
-      editingMacro = false;
+      appState = AppState.Normal;
     }}
   >
     <MacroEditor />
+  </Popout>
+{:else if appState === AppState.DevelopmentStateInfo}
+  <Popout
+    onClose={() => {
+      appState = AppState.Normal;
+    }}
+  >
+    This application is still in development. Some features may not work as expected and breaking changed may be introduced.
+  </Popout>
+{:else if appState === AppState.CreatingEmbed && project !== undefined}
+  <Popout
+    onClose={() => {
+      appState = AppState.Normal;
+    }}
+  >
+    <EmbedCreator {project} />
   </Popout>
 {/if}
 
@@ -310,5 +366,13 @@
     align-items: center;
     gap: 0.5em;
     cursor: pointer;
+  }
+
+  .centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
   }
 </style>

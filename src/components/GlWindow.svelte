@@ -20,14 +20,21 @@
   import { PipeLine } from "../pipeline";
   import type { Project } from "../project";
   import { WINDOW_ASPECT, WINDOW_HEIGHT, WINDOW_WIDTH } from "@/gl/utils";
-  import { FPS } from "../utils";
+  import { FPS, PLAYING } from "../utils";
 
   export let project: Project | null;
 
   let pipeline: PipeLine | null = null;
 
-  $: if (project !== null && gl !== null) {
-    pipeline = new PipeLine(project, gl);
+  // When the project is recompiled or the window size changes,
+  // the window is rererended even if paused.
+  let pausedNeedsUpdate = true;
+
+  $: {
+    if (project !== null && gl !== null) {
+      pipeline = new PipeLine(project, gl);
+    }
+    pausedNeedsUpdate = true;
   }
 
   let canv: HTMLCanvasElement;
@@ -41,7 +48,9 @@
   let FPS_INTEGRATION_TIME = 30; // frames
 
   function loop(currentTime: DOMHighResTimeStamp) {
-    if (pipeline !== null && gl !== null) {
+    if (($PLAYING || pausedNeedsUpdate) && pipeline !== null && gl !== null) {
+      pausedNeedsUpdate = false;
+
       const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
 
@@ -78,6 +87,8 @@
     if (gl !== null) {
       gl.viewport(0, 0, canv.width, canv.height);
     }
+
+    pausedNeedsUpdate = true;
   };
 
   onMount(() => {

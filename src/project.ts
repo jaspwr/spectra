@@ -55,12 +55,23 @@ _projects.push(
     `{"name":"Full Scene","goals":[{"name":"Swaying grass","done":false},{"name":"Wavy water","done":false},{"name":"Water reflections","done":false},{"name":"Post-processing effects","done":false}],"shaders":[], "pipelineGraph": {"nodes": [], "edges": []}}`
   )
 );
+_projects.push({
+  name: "Texture Demo",
+  goals: [],
+  shaderFiles: [],
+  pipelineGraph: {
+    nodes: writable([]),
+    edges: writable([]),
+  },
+  macros: [],
+});
 
-
-for (let i = 0; i < _projects.length; i++) {
-  const stored = localStorage.getItem(_projects[i].name);
-  if (stored !== null) {
-    _projects[i] = deserialize(stored);
+if (!URL_PARAMETERS.isEmbedded) {
+  for (let i = 0; i < _projects.length; i++) {
+    const stored = localStorage.getItem(_projects[i].name);
+    if (stored !== null) {
+      _projects[i] = deserialize(stored);
+    }
   }
 }
 
