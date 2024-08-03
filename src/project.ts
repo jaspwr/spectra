@@ -36,7 +36,9 @@ if (URL_PARAMETERS.project !== undefined) {
   _projects.push(project);
   selectedProject.set(project.name);
   if (URL_PARAMETERS.defaultSourceFile !== undefined) {
-    project.selectedShaderFile = writable(URL_PARAMETERS.defaultSourceFile);
+    console.log(URL_PARAMETERS.defaultSourceFile);
+    if (project.selectedShaderFile === undefined) project.selectedShaderFile = writable(URL_PARAMETERS.defaultSourceFile);
+    project.selectedShaderFile?.set(URL_PARAMETERS.defaultSourceFile);
   }
 }
 
@@ -56,7 +58,7 @@ _projects.push(
   )
 );
 _projects.push({
-  name: "Texture Demo",
+  name: "Diffuse",
   goals: [],
   shaderFiles: [],
   pipelineGraph: {
@@ -76,7 +78,8 @@ if (!URL_PARAMETERS.isEmbedded) {
 }
 
 for (let project of _projects) {
-  project.selectedShaderFile = writable(project.shaderFiles[0]?.filename ?? "");
+  if (project.selectedShaderFile === undefined)
+    project.selectedShaderFile = writable(project.shaderFiles[0]?.filename ?? "");
 }
 
 export const projects = writable<Project[]>(_projects);
