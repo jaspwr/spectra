@@ -27,20 +27,28 @@ export class FrameBufferTexture {
   public height: number = 0;
   public width: number = 0;
 
+  public readonly scaleFactor: number;
+
   public constructor(
     gl: WebGL2RenderingContext,
     height: number,
     width: number,
     resizeMode: TextureResizeMode,
+    scaleFactor: number,
     isDepthMap: boolean = false
   ) {
     this.isDepthMap = isDepthMap;
     [this.framebuffer, this.texture, this.renderBuffer] = this.createNew(gl, height, width, resizeMode, isDepthMap);
     this.height = height;
     this.width = width;
+    console.log(scaleFactor);
+    this.scaleFactor = scaleFactor;
   }
 
   public resize(gl: WebGL2RenderingContext, height: number, width: number) {
+    height = Math.floor(height * this.scaleFactor);
+    width = Math.floor(width * this.scaleFactor);
+
     if (height === this.height && width === this.width) {
       return;
     }
@@ -68,6 +76,9 @@ export class FrameBufferTexture {
   }
 
   private createNew(gl: WebGL2RenderingContext, height: number, width: number, resizeMode: TextureResizeMode, isDepthMap: boolean): [WebGLFramebuffer, WebGLTexture, WebGLRenderbuffer] {
+    height = Math.floor(height * this.scaleFactor);
+    width = Math.floor(width * this.scaleFactor);
+
     const texture = gl.createTexture();
 
     if (texture === null) {
@@ -115,6 +126,7 @@ export class FrameBufferTexture {
     }
 
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+      console.error(gl.checkFramebufferStatus(gl.FRAMEBUFFER));
       console.error("Framebuffer is not complete");
     }
 

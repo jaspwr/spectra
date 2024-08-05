@@ -68,14 +68,14 @@ _projects.push({
   macros: [],
 });
 
-if (!URL_PARAMETERS.isEmbedded) {
-  for (let i = 0; i < _projects.length; i++) {
-    const stored = localStorage.getItem(_projects[i].name);
-    if (stored !== null) {
-      _projects[i] = deserialize(stored);
-    }
-  }
-}
+// if (!URL_PARAMETERS.isEmbedded) {
+//   for (let i = 0; i < _projects.length; i++) {
+//     const stored = localStorage.getItem(_projects[i].name);
+//     if (stored !== null) {
+//       _projects[i] = deserialize(stored);
+//     }
+//   }
+// }
 
 for (let project of _projects) {
   if (project.selectedShaderFile === undefined)

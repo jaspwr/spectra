@@ -26,13 +26,19 @@
   export let data: {
     isDepthMap: boolean;
     resizeMode: TextureResizeMode;
+    scaleFactor: number;
   };
 
   if (!data) {
     data = {
       isDepthMap: false,
       resizeMode: TextureResizeMode.Linear,
+      scaleFactor: 1.
     };
+  }
+
+  if (!data.scaleFactor) {
+    data.scaleFactor = 1.;
   }
 
   const resizeModes = Object.values(TextureResizeMode);
@@ -55,6 +61,9 @@
       <option>{mode}</option>
     {/each}
   </select>
+  <br />
+  Scale:
+  <input type="number" bind:value={data.scaleFactor} step="0.1" />
   <TypedHandle
     type="source"
     position={Position.Right}
@@ -66,5 +75,9 @@
 <style>
   .small {
     font-size: 11px;
+  }
+
+  input[type="number"] {
+    width: 50px;
   }
 </style>

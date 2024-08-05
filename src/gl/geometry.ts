@@ -57,8 +57,11 @@ export class Mesh extends Geometry {
   }
 
   public render(gl: WebGL2RenderingContext, program: GLProgram) {
+    if (program.attributes["position"] !== undefined) 
     bindVBOToAttribute(gl, this.vertices, program.attributes["position"], 3);
+    if (program.attributes["normal"] !== undefined) 
     bindVBOToAttribute(gl, this.normals, program.attributes["normal"], 3);
+    if (program.attributes["uv"] !== undefined) 
     bindVBOToAttribute(gl, this.uv, program.attributes["uv"], 2);
 
     gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);

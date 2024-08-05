@@ -65,7 +65,8 @@ export class PipeLine {
         );
 
       Promise.all(steps).then((steps) => {
-        this.steps = steps.sort((a, b) => {
+        const stepsFlat = steps.flat();
+        this.steps = stepsFlat.sort((a, b) => {
           if (a.dependencies.includes(b.outputId)) {
             return 1;
           } else if (b.dependencies.includes(a.outputId)) {
@@ -227,6 +228,7 @@ function createFramebuffers(
       100,
       100,
       (n.data.resizeMode ?? TextureResizeMode.Linear) as TextureResizeMode,
+      n.data.scaleFactor as number,
       n.data.isDepthMap as boolean)] as [string, FrameBufferTexture])
     .reduce((acc, [id, fb]) => {
       acc[id] = fb;
@@ -265,31 +267,34 @@ async function createRenderStep(
   textures: Record<string, WebGLTexture>,
   framebuffers: Record<string, FrameBufferTexture>,
   gl: WebGL2RenderingContext
-): Promise<RenderStep> {
+): Promise<RenderStep[]> {
   const id = programNode.id;
   const targetedBy = es.filter((e) => e.target === id);
   const sourcedBy = es.filter((e) => e.source === id);
 
-  if (sourcedBy.length !== 1) {
-    throw new Error("Program needs 1 output");
+  if (sourcedBy.length === 0) {
+    throw new Error("Program needs at least 1 output");
   }
 
-  const outputNode = ns.find((n) => n.id === sourcedBy[0].target);
-  if (outputNode === undefined) {
-    throw new Error("No valid output for GL program");
-  }
+  const outputNodes = sourcedBy.map(s => ns.find((n) => n.id === s.target));
 
-  let output: FrameBufferTexture | null;
+  let output: [(FrameBufferTexture | null), string][] = [];
 
-  if (outputNode.type === "window") {
-    output = null;
-  } else if (outputNode.type === "framebuffer") {
-    output = framebuffers[outputNode.id];
-    if (output === undefined) {
-      throw new Error("Framebuffer not found");
+  for (const outputNode of outputNodes) {
+    if (outputNode === undefined) {
+      throw new Error("No valid output for GL program");
     }
-  } else {
-    throw new Error("Invalid output.");
+
+    if (outputNode.type === "window") {
+      output.push([null, outputNode.id]);
+    } else if (outputNode.type === "framebuffer") {
+      output.push([framebuffers[outputNode.id], outputNode.id]);
+      if (output === undefined) {
+        throw new Error("Framebuffer not found");
+      }
+    } else {
+      throw new Error("Invalid output.");
+    }
   }
 
 
@@ -338,5 +343,5 @@ async function createRenderStep(
 
   let program = new GLProgram(gl, [vs, fs]);
 
-  return new RenderStep(program, output, geo, uniformSetters, dependencies, outputNode.id);
+  return output.map(([output, nodeId]) => new RenderStep(program, output, geo, uniformSetters, dependencies, nodeId));
 }
