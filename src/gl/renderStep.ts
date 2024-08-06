@@ -70,6 +70,10 @@ export class RenderStep {
       geometry.render(gl, this.program);
     }
 
+    for (let setter of this.uniformSetters) {
+      setter.reset(gl, this.program);
+    }
+
     if (this.framebuffer !== null) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);

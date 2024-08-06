@@ -54,6 +54,8 @@ export class PipeLine {
       const { ns, es } = expandMacros(nodes, edges, project.macros);
       nodes = ns;
       edges = es;
+      // project.pipelineGraph.nodes.set(ns);
+      // project.pipelineGraph.edges.set(es);
 
       const framebuffers = createFramebuffers(nodes, gl);
       const textures = createTextures(nodes, gl);
@@ -225,9 +227,9 @@ function createFramebuffers(
   return ns.filter((n) => n.type === "framebuffer")
     .map((n) => [n.id, new FrameBufferTexture(
       gl,
-      100,
-      100,
-      (n.data.resizeMode ?? TextureResizeMode.Linear) as TextureResizeMode,
+      1000,
+      1000,
+      (n.data.resizeMode ?? TextureResizeMode.Nearest) as TextureResizeMode,
       n.data.scaleFactor as number,
       n.data.isDepthMap as boolean)] as [string, FrameBufferTexture])
     .reduce((acc, [id, fb]) => {

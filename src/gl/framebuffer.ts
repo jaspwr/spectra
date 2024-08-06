@@ -38,11 +38,10 @@ export class FrameBufferTexture {
     isDepthMap: boolean = false
   ) {
     this.isDepthMap = isDepthMap;
-    [this.framebuffer, this.texture, this.renderBuffer] = this.createNew(gl, height, width, resizeMode, isDepthMap);
-    this.height = height;
-    this.width = width;
-    console.log(scaleFactor);
     this.scaleFactor = scaleFactor;
+    this.height = Math.floor(height * this.scaleFactor);
+    this.width = Math.floor(width * this.scaleFactor);
+    [this.framebuffer, this.texture, this.renderBuffer] = this.createNew(gl, resizeMode, isDepthMap);
   }
 
   public resize(gl: WebGL2RenderingContext, height: number, width: number) {
@@ -53,13 +52,18 @@ export class FrameBufferTexture {
       return;
     }
 
+    console.log("Resizing framebuffer to", height, width);
+
+    this.height = height;
+    this.width = width;
+
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
       this.isDepthMap ? gl.DEPTH_COMPONENT24 : gl.RGBA,
-      width,
-      height,
+      this.width,
+      this.height,
       0,
       this.isDepthMap ? gl.DEPTH_COMPONENT : gl.RGBA,
       this.isDepthMap ? gl.UNSIGNED_INT : gl.UNSIGNED_BYTE,
@@ -68,17 +72,11 @@ export class FrameBufferTexture {
 
     if (!this.isDepthMap) {
       gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBuffer);
-      gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+      gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
     }
-
-    this.height = height;
-    this.width = width;
   }
 
-  private createNew(gl: WebGL2RenderingContext, height: number, width: number, resizeMode: TextureResizeMode, isDepthMap: boolean): [WebGLFramebuffer, WebGLTexture, WebGLRenderbuffer] {
-    height = Math.floor(height * this.scaleFactor);
-    width = Math.floor(width * this.scaleFactor);
-
+  private createNew(gl: WebGL2RenderingContext, resizeMode: TextureResizeMode, isDepthMap: boolean): [WebGLFramebuffer, WebGLTexture, WebGLRenderbuffer] {
     const texture = gl.createTexture();
 
     if (texture === null) {
@@ -93,8 +91,8 @@ export class FrameBufferTexture {
       gl.TEXTURE_2D,
       0,
       isDepthMap ? gl.DEPTH_COMPONENT24 : gl.RGBA,
-      width,
-      height,
+      this.width,
+      this.height,
       0,
       isDepthMap ? gl.DEPTH_COMPONENT : gl.RGBA,
       isDepthMap ? gl.UNSIGNED_INT : gl.UNSIGNED_BYTE,
@@ -110,7 +108,7 @@ export class FrameBufferTexture {
 
     if (!isDepthMap) {
       gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
-      gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+      gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
     }
 
     gl.framebufferTexture2D(
@@ -126,6 +124,7 @@ export class FrameBufferTexture {
     }
 
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+      console.log(this);
       console.error(gl.checkFramebufferStatus(gl.FRAMEBUFFER));
       console.error("Framebuffer is not complete");
     }
