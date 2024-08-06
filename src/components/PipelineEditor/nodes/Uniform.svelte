@@ -77,6 +77,9 @@
     case UniformNodeType.CubeMap:
       outputType = KnownType.TextureCube;
       break;
+    case UniformNodeType.WindowSize:
+      outputType = KnownType.Vec2;
+      break;
   }
 
 </script>
@@ -177,7 +180,7 @@
     </div>
   </div>
 
-  <TypedHandle type="source" position={Position.Right} valueType={outputType} />
+  <TypedHandle type="source" position={Position.Right} valueType={outputType} id="__output" />
 </div>
 
 <style>

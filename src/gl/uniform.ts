@@ -21,7 +21,8 @@ import { WINDOW_HEIGHT, WINDOW_WIDTH } from "./utils";
 import { Projection, View } from "@/camera";
 
 export interface UniformSetter {
-  set(gl: WebGLRenderingContext, program: GLProgram): void;
+  set(gl: WebGL2RenderingContext, program: GLProgram): void;
+  reset(gl: WebGL2RenderingContext, program: GLProgram): void;
 }
 
 export class UniformFloatSetter implements UniformSetter {
@@ -33,9 +34,11 @@ export class UniformFloatSetter implements UniformSetter {
     this.value = value;
   }
 
-  public set(gl: WebGLRenderingContext, program: GLProgram) {
+  public set(gl: WebGL2RenderingContext, program: GLProgram) {
     gl.uniform1f(program.uniforms[this.name], this.value);
   }
+
+  public reset(gl: WebGL2RenderingContext, program: GLProgram) {}
 }
 
 export class UniformTimeSetter extends UniformFloatSetter {
@@ -43,7 +46,7 @@ export class UniformTimeSetter extends UniformFloatSetter {
     super(name, 0);
   }
 
-  public set(gl: WebGLRenderingContext, program: GLProgram) {
+  public set(gl: WebGL2RenderingContext, program: GLProgram) {
     this.value += 0.01;
     gl.uniform1f(program.uniforms[this.name], this.value);
   }
@@ -63,10 +66,12 @@ export class UniformVec2Setter implements UniformSetter {
     this.value = value;
   }
 
-  public set(gl: WebGLRenderingContext, program: GLProgram) {
+  public set(gl: WebGL2RenderingContext, program: GLProgram) {
     const [x, y] = this.getValue();
     gl.uniform2f(program.uniforms[this.name], x, y);
   }
+
+  public reset(gl: WebGL2RenderingContext, program: GLProgram) {}
 }
 
 export class UniformWindowSizeSetter extends UniformVec2Setter {
@@ -92,11 +97,17 @@ export class UniformTextureSetter implements UniformSetter {
     this.isCubeMap = isCubeMap;
   }
 
-  public set(gl: WebGLRenderingContext, program: GLProgram) {
+  public set(gl: WebGL2RenderingContext, program: GLProgram) {
     const unit: GLenum = gl.TEXTURE0 + this.textureUnit;
     gl.activeTexture(unit);
     gl.bindTexture(this.isCubeMap ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D, this.texture);
     gl.uniform1i(program.uniforms[this.name], this.textureUnit);
+  }
+
+  public reset(gl: WebGL2RenderingContext, program: GLProgram) {
+    const unit: GLenum = gl.TEXTURE0 + this.textureUnit;
+    gl.activeTexture(unit);
+    gl.bindTexture(this.isCubeMap ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D, null);
   }
 }
 
@@ -117,13 +128,15 @@ export class UniformMat4Setter implements UniformSetter {
     }
   }
 
-  public set(gl: WebGLRenderingContext, program: GLProgram) {
+  public set(gl: WebGL2RenderingContext, program: GLProgram) {
     gl.uniformMatrix4fv(
       program.uniforms[this.name],
       false,
       new Float32Array(this.getValue())
     );
   }
+
+  public reset(gl: WebGL2RenderingContext, program: GLProgram) {}
 }
 
 export class UniformTranslationSetter extends UniformMat4Setter {

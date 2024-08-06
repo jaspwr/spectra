@@ -117,11 +117,11 @@ export function getMacroNodesAndEdges(macro: Macro): { nodes: SvelteFlowNode[], 
   // Evil value stealing
   let nodes: SvelteFlowNode[] | undefined, edges: SvelteFlowEdge[] | undefined;
   macro.nodes.update((n) => {
-    nodes = [...n];
+    nodes = [...n].map(n => ({...n}));
     return n;
   });
   macro.edges.update((e) => {
-    edges = [...e];
+    edges = [...e].map(e => ({...e}));
     return e;
   });
 

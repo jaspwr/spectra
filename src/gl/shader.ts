@@ -46,7 +46,7 @@ export class Shader {
    * Returns the compiled `WebGLShader` for this shader but only
    * recompiles if the source has changed.
    */
-  public compiled(gl: WebGLRenderingContext): WebGLShader {
+  public compiled(gl: WebGL2RenderingContext): WebGLShader {
     const currentSourceHash = hashString(this._contents);
 
     // if (
@@ -150,7 +150,7 @@ export interface Uniform {
 }
 
 export function compileShader(
-  gl: WebGLRenderingContext,
+  gl: WebGL2RenderingContext,
   source: Shader
 ): WebGLShader {
   let type: number | undefined = undefined;

@@ -19,6 +19,19 @@ button {
   color: var(--text-sec);
   min-width: 2rem;
   border: solid 1px var(--text-prim);
+  height: 27.5px;
+}
+
+a {
+  color: var(--text-prim);
+}
+
+a:hover {
+  color: var(--text-sec);
+}
+
+a:visited {
+  color: var(--text-prim);
 }
 
 input[type="checkbox"] {

@@ -45,7 +45,7 @@ export class RenderStep {
     this.outputId = outputId;
   }
 
-  public render(gl: WebGLRenderingContext, deltaTime: number) {
+  public render(gl: WebGL2RenderingContext, deltaTime: number) {
     if (this.framebuffer !== null) {
       this.framebuffer.resize(gl, gl.canvas.height, gl.canvas.width);
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer.framebuffer);
@@ -68,6 +68,10 @@ export class RenderStep {
         override.set(gl, this.program);
       }
       geometry.render(gl, this.program);
+    }
+
+    for (let setter of this.uniformSetters) {
+      setter.reset(gl, this.program);
     }
 
     if (this.framebuffer !== null) {

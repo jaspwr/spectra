@@ -33,7 +33,7 @@ import { expandMacros } from "@/macro";
 export class PipeLine {
   private steps: RenderStep[] = [];
 
-  public constructor(project: Project, gl: WebGLRenderingContext) {
+  public constructor(project: Project, gl: WebGL2RenderingContext) {
     let errors: string[] = [];
 
     try {
@@ -54,6 +54,8 @@ export class PipeLine {
       const { ns, es } = expandMacros(nodes, edges, project.macros);
       nodes = ns;
       edges = es;
+      // project.pipelineGraph.nodes.set(ns);
+      // project.pipelineGraph.edges.set(es);
 
       const framebuffers = createFramebuffers(nodes, gl);
       const textures = createTextures(nodes, gl);
@@ -65,7 +67,8 @@ export class PipeLine {
         );
 
       Promise.all(steps).then((steps) => {
-        this.steps = steps.sort((a, b) => {
+        const stepsFlat = steps.flat();
+        this.steps = stepsFlat.sort((a, b) => {
           if (a.dependencies.includes(b.outputId)) {
             return 1;
           } else if (b.dependencies.includes(a.outputId)) {
@@ -83,7 +86,7 @@ export class PipeLine {
     }
   }
 
-  public render(gl: WebGLRenderingContext, deltaTime: number) {
+  public render(gl: WebGL2RenderingContext, deltaTime: number) {
     for (let step of this.steps) {
       step.render(gl, deltaTime);
     }
@@ -219,14 +222,15 @@ function handleUniformNode(
 
 function createFramebuffers(
   ns: Node[],
-  gl: WebGLRenderingContext
+  gl: WebGL2RenderingContext
 ): Record<string, FrameBufferTexture> {
   return ns.filter((n) => n.type === "framebuffer")
     .map((n) => [n.id, new FrameBufferTexture(
       gl,
-      100,
-      100,
-      (n.data.resizeMode ?? TextureResizeMode.Linear) as TextureResizeMode,
+      1000,
+      1000,
+      (n.data.resizeMode ?? TextureResizeMode.Nearest) as TextureResizeMode,
+      n.data.scaleFactor as number,
       n.data.isDepthMap as boolean)] as [string, FrameBufferTexture])
     .reduce((acc, [id, fb]) => {
       acc[id] = fb;
@@ -236,7 +240,7 @@ function createFramebuffers(
 
 function createTextures(
   ns: Node[],
-  gl: WebGLRenderingContext
+  gl: WebGL2RenderingContext
 ): Record<string, WebGLTexture> {
   const uniformNodes = ns.filter((n) => n.type === "uniform");
   const textureNodes = uniformNodes.filter((n) => n.data.type === UniformNodeType.Tex);
@@ -264,32 +268,35 @@ async function createRenderStep(
   shaders: Shader[],
   textures: Record<string, WebGLTexture>,
   framebuffers: Record<string, FrameBufferTexture>,
-  gl: WebGLRenderingContext
-): Promise<RenderStep> {
+  gl: WebGL2RenderingContext
+): Promise<RenderStep[]> {
   const id = programNode.id;
   const targetedBy = es.filter((e) => e.target === id);
   const sourcedBy = es.filter((e) => e.source === id);
 
-  if (sourcedBy.length !== 1) {
-    throw new Error("Program needs 1 output");
+  if (sourcedBy.length === 0) {
+    throw new Error("Program needs at least 1 output");
   }
 
-  const outputNode = ns.find((n) => n.id === sourcedBy[0].target);
-  if (outputNode === undefined) {
-    throw new Error("No valid output for GL program");
-  }
+  const outputNodes = sourcedBy.map(s => ns.find((n) => n.id === s.target));
 
-  let output: FrameBufferTexture | null;
+  let output: [(FrameBufferTexture | null), string][] = [];
 
-  if (outputNode.type === "window") {
-    output = null;
-  } else if (outputNode.type === "framebuffer") {
-    output = framebuffers[outputNode.id];
-    if (output === undefined) {
-      throw new Error("Framebuffer not found");
+  for (const outputNode of outputNodes) {
+    if (outputNode === undefined) {
+      throw new Error("No valid output for GL program");
     }
-  } else {
-    throw new Error("Invalid output.");
+
+    if (outputNode.type === "window") {
+      output.push([null, outputNode.id]);
+    } else if (outputNode.type === "framebuffer") {
+      output.push([framebuffers[outputNode.id], outputNode.id]);
+      if (output === undefined) {
+        throw new Error("Framebuffer not found");
+      }
+    } else {
+      throw new Error("Invalid output.");
+    }
   }
 
 
@@ -338,5 +345,5 @@ async function createRenderStep(
 
   let program = new GLProgram(gl, [vs, fs]);
 
-  return new RenderStep(program, output, geo, uniformSetters, dependencies, outputNode.id);
+  return output.map(([output, nodeId]) => new RenderStep(program, output, geo, uniformSetters, dependencies, nodeId));
 }

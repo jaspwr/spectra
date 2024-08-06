@@ -21,9 +21,10 @@
     projects,
     selectedProject,
     serialize,
+    toUrl,
     type Project,
   } from "./project";
-  import { FPS, GL_ERRORS } from "./utils";
+  import { FPS, GL_ERRORS, PLAYING } from "./utils";
 
   import CodeEditor from "./components/CodeEditor.svelte";
   import ErrorList from "./components/ErrorList.svelte";
@@ -33,6 +34,11 @@
   import { SvelteFlowProvider } from "@xyflow/svelte";
   import MacroEditor from "./components/PipelineEditor/MacroEditor.svelte";
   import Popout from "./components/Popout.svelte";
+  import { nonEmbedUrl, URL_PARAMETERS } from "./url";
+  import PlayPauseButton from "./components/PlayPauseButton.svelte";
+  import EmbedCreator from "./components/EmbedCreator.svelte";
+
+  const isEmbedded = URL_PARAMETERS.isEmbedded;
 
   let _selected = $selectedProject;
   $: selectedProject.set(_selected);
@@ -72,92 +78,208 @@
     if (project === undefined) return;
     const serialized = serialize(project);
     localStorage.setItem(project.name, serialized);
+    console.log(serialized);
+    const url = toUrl(project);
+    console.log(url);
+    console.log(
+      "url length",
+      url.length,
+      "uncompressed lenght",
+      serialized.length,
+    );
+    console.log("compression ratio", url.length / serialized.length);
   };
 
-  let editingMacro = false;
+  enum AppState {
+    Normal,
+    DevelopmentStateInfo,
+    EditingMacro,
+    CreatingEmbed,
+  }
+
+  let appState = URL_PARAMETERS.isEmbedded ? AppState.Normal : AppState.DevelopmentStateInfo;
+
+  let started = false;
 </script>
 
-<div class="layout">
-  <div class="top-bar">
-    <div class="top-bar-item" style="padding-left: 1rem">
-      FPS: <span class="fps">{$FPS.toFixed(2)}</span>
-    </div>
-    <div class="top-bar-item">
-      <button on:click={recompile}>
-        <div class="button-contents">
-          <img class="icon" src="icons/cog.svg" alt="recompile" />
-          Recompile
+{#if isEmbedded}
+  <div class="embed-layout">
+    <div class="embed-top-bar">
+      <div style="display: flex; flex-direction: row; align-items: center;">
+        <button on:click={recompile}>
+          <div class="button-contents">
+            <img class="icon" src="icons/cog.svg" alt="recompile" />
+            Recompile
+          </div>
+        </button>
+        <div style="padding-left: 8px">
+          <PlayPauseButton />
         </div>
-      </button>
-      <button on:click={save}>
-        <div class="button-contents">
-          <img class="icon" src="icons/floppy.svg" alt="save" />
-          Save
+      </div>
+      <div style="display: flex; align-items: center; padding-right: 1em">
+        <a href={nonEmbedUrl()} target="_blank"> View full project </a>
+      </div>
+    </div>
+    <div class="embed-gl-window">
+      {#if !URL_PARAMETERS.startIdle || started}
+        <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
+          <GlWindow project={displayingProject} />
         </div>
-      </button>
+        {#if $GL_ERRORS.length > 0}
+          <ErrorList errors={$GL_ERRORS} />
+        {/if}
+      {:else}
+        <div class="gl-container">
+          <button class="centered" on:click={() => (started = true)}>
+            <h1>Click to start</h1>
+          </button>
+        </div>
+      {/if}
     </div>
-    <div class="top-bar-item">
-      Project:
-      <select bind:value={_selected}>
-        {#each $projects as project}
-          <option>{project.name}</option>
-        {/each}
-      </select>
+    <div class="embed-code-editor">
+      <CodeEditor vimMode={editorVimMode} />
     </div>
-    <div class="top-bar-item checkbox-and-label">
-      <input type="checkbox" bind:checked={editorVimMode} />
-      Vim Mode
-    </div>
+  </div>
+{:else}
+  <div class="layout">
     <div class="top-bar">
-      <button on:click={() => (editingMacro = true)}>
-        <div class="button-contents">Configure Macros</div>
-      </button>
+      <div class="top-bar-item" style="padding-left: 1rem">
+        FPS: <span class="fps">{$FPS.toFixed(2)}</span>
+      </div>
+      <div class="top-bar-item">
+        <PlayPauseButton />
+      </div>
+      <div class="top-bar-item">
+        <button on:click={recompile}>
+          <div class="button-contents">
+            <img class="icon" src="icons/cog.svg" alt="recompile" />
+            Recompile
+          </div>
+        </button>
+        <button on:click={save}>
+          <div class="button-contents">
+            <img class="icon" src="icons/floppy.svg" alt="save" />
+            Save
+          </div>
+        </button>
+      </div>
+      <div class="top-bar-item">
+        Project:
+        <select bind:value={_selected}>
+          {#each $projects as project}
+            <option>{project.name}</option>
+          {/each}
+        </select>
+      </div>
+      <div class="top-bar-item checkbox-and-label">
+        <input type="checkbox" bind:checked={editorVimMode} />
+        Vim Mode
+      </div>
+      <div class="top-bar">
+        <button on:click={() => (appState = AppState.EditingMacro)}>
+          <div class="button-contents">Configure Macros</div>
+        </button>
+        <button
+          on:click={() => (appState = AppState.CreatingEmbed)}
+          style="margin-left: 7px;"
+        >
+          <div class="button-contents">Create Embed</div>
+        </button>
+      </div>
     </div>
-  </div>
-  <div class="gl-window">
-    <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
-      <GlWindow project={displayingProject} />
+    <div class="gl-window">
+      <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
+        <GlWindow project={displayingProject} />
+      </div>
+      {#if $GL_ERRORS.length > 0}
+        <ErrorList errors={$GL_ERRORS} />
+      {/if}
     </div>
-    {#if $GL_ERRORS.length > 0}
-      <ErrorList errors={$GL_ERRORS} />
-    {/if}
-  </div>
-  <div class="code-editor">
-    <CodeEditor vimMode={editorVimMode} />
-  </div>
-  <div class="pipeline-editor">
-    {#if project !== undefined && !forcingRerender}
-      <SvelteFlowProvider>
-        <PipelineEditor
-          nodes={project.pipelineGraph.nodes}
-          edges={project.pipelineGraph.edges}
-        />
-      </SvelteFlowProvider>
-    {/if}
-  </div>
+    <div class="code-editor">
+      <CodeEditor vimMode={editorVimMode} />
+    </div>
+    <div class="pipeline-editor">
+      {#if project !== undefined && !forcingRerender}
+        <SvelteFlowProvider>
+          <PipelineEditor
+            nodes={project.pipelineGraph.nodes}
+            edges={project.pipelineGraph.edges}
+          />
+        </SvelteFlowProvider>
+      {/if}
+    </div>
 
-  <div class="sidebar">
-    <div class="file-tree">
-      <FileTree />
-    </div>
-    <div class="goals">
-      <hr />
-      <Goals />
+    <div class="sidebar">
+      <div class="file-tree">
+        <FileTree />
+      </div>
+      <div class="goals">
+        <hr />
+        <Goals />
+      </div>
     </div>
   </div>
-</div>
+{/if}
 
-{#if editingMacro}
+{#if appState === AppState.EditingMacro}
   <Popout
     onClose={() => {
-      editingMacro = false;
+      appState = AppState.Normal;
     }}
   >
     <MacroEditor />
   </Popout>
+{:else if appState === AppState.DevelopmentStateInfo}
+  <Popout
+    onClose={() => {
+      appState = AppState.Normal;
+    }}
+  >
+    This application is still in development. Some features may not work as expected and breaking changed may be introduced.
+  </Popout>
+{:else if appState === AppState.CreatingEmbed && project !== undefined}
+  <Popout
+    onClose={() => {
+      appState = AppState.Normal;
+    }}
+  >
+    <EmbedCreator {project} />
+  </Popout>
 {/if}
 
 <style>
+  .embed-layout {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1.1fr 1.3fr;
+    grid-template-rows: 0.2fr 1.8fr;
+    grid-auto-columns: 1fr;
+    grid-auto-rows: 1fr;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "embed-top-bar embed-top-bar"
+      "embed-gl-window embed-code-editor";
+  }
+
+  .embed-top-bar {
+    grid-area: embed-top-bar;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .embed-gl-window {
+    grid-area: embed-gl-window;
+  }
+
+  .embed-code-editor {
+    grid-area: embed-code-editor;
+  }
+
   .layout {
     position: absolute;
     left: 0;
@@ -244,5 +366,13 @@
     align-items: center;
     gap: 0.5em;
     cursor: pointer;
+  }
+
+  .centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
   }
 </style>

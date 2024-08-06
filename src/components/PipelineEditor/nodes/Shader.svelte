@@ -73,7 +73,7 @@
   </div>
 
   <InputHandleList {handles} top={60} />
-  <TypedHandle type="source" position={Position.Right} valueType={valueType} />
+  <TypedHandle type="source" position={Position.Right} valueType={valueType} id="__output" />
 </div>
 
 <style>

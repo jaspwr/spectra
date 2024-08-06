@@ -23,7 +23,7 @@ export class GLProgram {
   public readonly uniformTypes: Record<string, string>;
   public readonly attributes: Record<string, GLint>;
 
-  public constructor(gl: WebGLRenderingContext, shaders: Shader[]) {
+  public constructor(gl: WebGL2RenderingContext, shaders: Shader[]) {
     this.program = gl.createProgram()!;
     for (let shader of shaders) {
       gl.attachShader(this.program, shader.compiled(gl));
