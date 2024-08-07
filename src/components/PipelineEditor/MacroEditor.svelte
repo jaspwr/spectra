@@ -22,6 +22,7 @@
   import FileTree from "../FileTree.svelte";
   import MacroList from "./MacroList.svelte";
   import { projects, selectedProject, type Project } from "@/project";
+  import { MacroProvider } from "@/filetree";
 
   $: project = $projects.find((p) => p.name === $selectedProject);
   $: macro = project?.macros.find(
@@ -55,7 +56,7 @@
 
 <div class="layout">
   <div class="file-tree">
-    <MacroList />
+    <FileTree provider={new MacroProvider()} />
   </div>
   <div class="macro-meta">
     {#if macro !== undefined && inputLabels !== undefined && $inputLabels !== undefined}
