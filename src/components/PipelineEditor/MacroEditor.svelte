@@ -20,7 +20,6 @@
   import PipelineEditor from "./PipelineEditor.svelte";
   import { MACRO_EDITOR_SELECTED_MACRO, newMacro } from "@/macro";
   import FileTree from "../FileTree.svelte";
-  import MacroList from "./MacroList.svelte";
   import { projects, selectedProject, type Project } from "@/project";
   import { MacroProvider } from "@/filetree";
 

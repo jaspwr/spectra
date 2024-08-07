@@ -29,6 +29,7 @@ import { FullscreenQuad, Mesh, SkyBox, type Geometry } from "./gl/geometry";
 import { GLProgram } from "./gl/glProgram";
 import { UniformFloatSetter, UniformProjectionSetter, UniformTextureSetter, UniformTimeSetter, UniformTranslationSetter, UniformVec2Setter, UniformViewSetter, UniformWindowSizeSetter, type UniformSetter } from "./gl/uniform";
 import { expandMacros } from "@/macro";
+import { get } from "svelte/store";
 
 export class PipeLine {
   private steps: RenderStep[] = [];
@@ -37,16 +38,9 @@ export class PipeLine {
     let errors: string[] = [];
 
     try {
-      // Evil value stealing
       let nodes: Node[] | undefined, edges: Edge[] | undefined;
-      project.pipelineGraph.nodes.update((n) => {
-        nodes = [...n];
-        return n;
-      });
-      project.pipelineGraph.edges.update((e) => {
-        edges = [...e];
-        return e;
-      });
+      nodes = [...get(project.pipelineGraph.nodes)].map(n => ({ ...n }));
+      edges = [...get(project.pipelineGraph.edges)].map(e => ({ ...e }));
 
       if (nodes === undefined || edges === undefined)
         throw ["Error in graph data"];

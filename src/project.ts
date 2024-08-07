@@ -15,7 +15,7 @@
  * along with Spectra. If not, see <https://www.gnu.org/licenses/>.
  * */
 
-import { writable, type Writable } from "svelte/store";
+import { get, writable, type Writable } from "svelte/store";
 import { deserializeShader, Shader, type SerializedShader } from "./gl/shader";
 import pako from "pako";
 import type {
@@ -147,16 +147,9 @@ interface SerializedPipelineGraph {
 }
 
 function serializePipelineGraph(graph: PipelineGraph): SerializedPipelineGraph {
-  // Evil value stealing
   let nodes: SvelteFlowNode[] | undefined, edges: SvelteFlowEdge[] | undefined;
-  graph.nodes.update((n) => {
-    nodes = [...n];
-    return n;
-  });
-  graph.edges.update((e) => {
-    edges = [...e];
-    return e;
-  });
+  nodes = [...get(graph.nodes)].map(n => ({...n}));
+  edges = [...get(graph.edges)].map(e => ({...e}));
 
   if (nodes === undefined || edges === undefined)
     throw new Error("Error in graph data");
@@ -177,20 +170,10 @@ function deserializePipelineGraph(
 }
 
 function serializeMacro(macro: Macro): SerializedMacro {
-  // Evil value stealing
   let nodes: SvelteFlowNode[] | undefined, edges: SvelteFlowEdge[] | undefined, inputLabels: string[] | undefined;
-  macro.nodes.update((n) => {
-    nodes = [...n];
-    return n;
-  });
-  macro.edges.update((e) => {
-    edges = [...e];
-    return e;
-  });
-  macro.inputLabels.update((l) => {
-    inputLabels = [...l];
-    return l;
-  });
+  nodes = [...get(macro.nodes)].map(n => ({...n}));
+  edges = [...get(macro.edges)].map(e => ({...e}));
+  inputLabels = [...get(macro.inputLabels)];
 
   if (nodes === undefined || edges === undefined || inputLabels === undefined)
     throw new Error("Error in macro data");
