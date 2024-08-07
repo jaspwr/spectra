@@ -37,9 +37,11 @@
   import { nonEmbedUrl, URL_PARAMETERS } from "./url";
   import PlayPauseButton from "./components/PlayPauseButton.svelte";
   import EmbedCreator from "./components/EmbedCreator.svelte";
-    import { ShaderFilesProvider } from "./filetree";
+  import { ShaderFilesProvider } from "./filetree";
+  import PresentationMode from "./components/PresentationMode.svelte";
 
   const isEmbedded = URL_PARAMETERS.isEmbedded;
+  let presentationMode = false;
 
   let _selected = $selectedProject;
   $: selectedProject.set(_selected);
@@ -98,7 +100,9 @@
     CreatingEmbed,
   }
 
-  let appState = URL_PARAMETERS.isEmbedded ? AppState.Normal : AppState.DevelopmentStateInfo;
+  let appState = URL_PARAMETERS.isEmbedded
+    ? AppState.Normal
+    : AppState.DevelopmentStateInfo;
 
   let started = false;
 </script>
@@ -141,6 +145,8 @@
       <CodeEditor vimMode={editorVimMode} />
     </div>
   </div>
+{:else if presentationMode && project !== undefined}
+  <PresentationMode {recompile} {project} onClose={() => presentationMode = false} />
 {:else}
   <div class="layout">
     <div class="top-bar">
@@ -176,7 +182,7 @@
         <input type="checkbox" bind:checked={editorVimMode} />
         Vim Mode
       </div>
-      <div class="top-bar">
+      <div class="top-bar-item">
         <button on:click={() => (appState = AppState.EditingMacro)}>
           <div class="button-contents">Configure Macros</div>
         </button>
@@ -185,6 +191,12 @@
           style="margin-left: 7px;"
         >
           <div class="button-contents">Create Embed</div>
+        </button>
+        <button
+          on:click={() => (presentationMode = true)}
+          style="margin-left: 7px;"
+        >
+          <div class="button-contents">Presentation Mode</div>
         </button>
       </div>
     </div>
@@ -236,7 +248,8 @@
       appState = AppState.Normal;
     }}
   >
-    This application is still in development. Some features may not work as expected and breaking changed may be introduced.
+    This application is still in development. Some features may not work as
+    expected and breaking changed may be introduced.
   </Popout>
 {:else if appState === AppState.CreatingEmbed && project !== undefined}
   <Popout

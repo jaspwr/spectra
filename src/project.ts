@@ -24,6 +24,7 @@ import type {
 } from "@xyflow/svelte";
 import type { Macro } from "@/macro";
 import { URL_PARAMETERS } from "./url";
+import type { Presentation } from "./presentation";
 
 
 // The filename of the selected project
@@ -91,6 +92,7 @@ export interface Project {
   selectedShaderFile?: Writable<string>;
   pipelineGraph: PipelineGraph;
   macros: Macro[];
+  presentation?: Presentation;
 }
 
 export interface Goal {

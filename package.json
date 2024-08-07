@@ -25,6 +25,9 @@
   },
   "dependencies": {
     "@xyflow/svelte": "^0.1.13",
-    "monaco-vim": "^0.4.1"
+    "katex": "^0.16.11",
+    "marked-katex-extension": "^5.1.1",
+    "monaco-vim": "^0.4.1",
+    "svelte-markdown": "^0.4.1"
   }
 }
