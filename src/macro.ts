@@ -16,7 +16,7 @@
  * */
 
 import { type Node as SvelteFlowNode, type Edge as SvelteFlowEdge } from "@xyflow/svelte";
-import { writable, type Writable } from "svelte/store";
+import { get, writable, type Writable } from "svelte/store";
 
 export interface Macro {
   name: string;
@@ -114,16 +114,10 @@ export function expandMacros(nodes: SvelteFlowNode[], edges: SvelteFlowEdge[], m
 }
 
 export function getMacroNodesAndEdges(macro: Macro): { nodes: SvelteFlowNode[], edges: SvelteFlowEdge[] } {
-  // Evil value stealing
   let nodes: SvelteFlowNode[] | undefined, edges: SvelteFlowEdge[] | undefined;
-  macro.nodes.update((n) => {
-    nodes = [...n].map(n => ({...n}));
-    return n;
-  });
-  macro.edges.update((e) => {
-    edges = [...e].map(e => ({...e}));
-    return e;
-  });
+
+  nodes = [...get(macro.nodes)].map(n => ({...n}));
+  edges = [...get(macro.edges)].map(e => ({...e}));
 
   if (nodes === undefined || edges === undefined)
     throw new Error("Error in graph data");

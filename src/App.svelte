@@ -37,6 +37,7 @@
   import { nonEmbedUrl, URL_PARAMETERS } from "./url";
   import PlayPauseButton from "./components/PlayPauseButton.svelte";
   import EmbedCreator from "./components/EmbedCreator.svelte";
+    import { ShaderFilesProvider } from "./filetree";
 
   const isEmbedded = URL_PARAMETERS.isEmbedded;
 
@@ -211,7 +212,7 @@
 
     <div class="sidebar">
       <div class="file-tree">
-        <FileTree />
+        <FileTree provider={new ShaderFilesProvider()} />
       </div>
       <div class="goals">
         <hr />
