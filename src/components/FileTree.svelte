@@ -51,22 +51,26 @@
   };
 </script>
 
-<button
-  on:click={() => {
-    provider.add();
-    list = list;
-  }}
->
-  +
-</button>
-<button
-  on:click={() => {
-    provider.remove();
-    list = list;
-  }}
->
-  -
-</button>
+<div class="add-remove-container">
+  <button
+    class="add-remove"
+    on:click={() => {
+      provider.add();
+      list = list;
+    }}
+  >
+    +
+  </button>
+  <button
+    class="add-remove"
+    on:click={() => {
+      provider.remove();
+      list = list;
+    }}
+  >
+    -
+  </button>
+</div>
 <ul>
   {#each sortedList as shader}
     <li class:selected={provider.itemName(shader) === $selected}>
@@ -135,5 +139,18 @@
 
   li button:hover {
     text-decoration: underline;
+  }
+
+  .add-remove-container {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .add-remove {
+    margin: 0.3rem;
+    font-size: 1.5em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 </style>

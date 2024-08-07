@@ -57,47 +57,60 @@
   <div class="file-tree">
     <FileTree provider={new MacroProvider()} />
   </div>
-  <div class="macro-meta">
-    {#if macro !== undefined && inputLabels !== undefined && $inputLabels !== undefined}
-      <h1>Macro Editor</h1>
-      <hr />
-      <button
-        on:click={() => {
-          inputLabels.update((l) => {
-            l.push("new input");
-            return l;
-          });
-        }}>Add Input</button
-      >
-      {#each $inputLabels as inputLabel, i}
-        <br />
-        <input type="text" bind:value={inputLabel} />
+  {#if macro === undefined}
+    <div class="center">
+      <p>No macros found in the project.</p>
+    </div>
+  {:else}
+    <div class="macro-meta">
+      {#if inputLabels !== undefined && $inputLabels !== undefined}
+        <h1>Macro Editor</h1>
+        <hr />
         <button
           on:click={() => {
             inputLabels.update((l) => {
-              l.splice(i, 1);
+              l.push("new input");
               return l;
             });
-          }}>Remove</button
+          }}>Add Input</button
         >
-      {/each}
-      <hr />
-    {/if}
-  </div>
-  <div class="macro-node-editor">
-    {#if macro !== undefined && !forcingRerender}
-      <SvelteFlowProvider>
-        <PipelineEditor
-          nodes={macro.nodes}
-          edges={macro.edges}
-          isMacro={true}
-        />
-      </SvelteFlowProvider>
-    {/if}
-  </div>
+        {#each $inputLabels as inputLabel, i}
+          <br />
+          <input type="text" bind:value={inputLabel} />
+          <button
+            on:click={() => {
+              inputLabels.update((l) => {
+                l.splice(i, 1);
+                return l;
+              });
+            }}>Remove</button
+          >
+        {/each}
+        <hr />
+      {/if}
+    </div>
+    <div class="macro-node-editor">
+      {#if !forcingRerender}
+        <SvelteFlowProvider>
+          <PipelineEditor
+            nodes={macro.nodes}
+            edges={macro.edges}
+            isMacro={true}
+          />
+        </SvelteFlowProvider>
+      {/if}
+    </div>
+  {/if}
 </div>
 
 <style>
+  .center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+
   .layout {
     position: static;
     width: calc(100%);

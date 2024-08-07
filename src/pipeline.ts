@@ -314,8 +314,15 @@ async function createRenderStep(
   dependencies.push(...frag_.dependencies);
   uniformSetters.push(...frag_.uniformSetters);
 
-  const vs = shaders.find((s) => s.filename === vert.data.shaderSourceFileName)!;
-  const fs = shaders.find((s) => s.filename === frag.data.shaderSourceFileName)!;
+  const vs = shaders.find((s) => s.filename === vert.data.shaderSourceFileName);
+  const fs = shaders.find((s) => s.filename === frag.data.shaderSourceFileName);
+
+  if (vs === undefined) {
+    throw new Error(`Vertex shader ${vert.data.shaderSourceFileName} not found`);
+  }
+  if (fs === undefined) {
+    throw new Error(`Fragment shader ${frag.data.shaderSourceFileName} not found`);
+  }
 
   let geo: Geometry[] = [];
 

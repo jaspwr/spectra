@@ -41,6 +41,7 @@
   import MacroOutput from "./nodes/MacroOutput.svelte";
   import MacroInputs from "./nodes/MacroInputs.svelte";
   import MacroNode from "./nodes/MacroNode.svelte";
+  import DefaultEdge from "./DefaultEdge.svelte";
   import { getNodeHandleType } from "@/utils";
 
   const nodeTypes = {
@@ -51,6 +52,10 @@
     geometry: Geometry,
     uniform: Uniform,
     macro: MacroNode,
+  };
+
+  const edgeTypes = {
+    default: DefaultEdge,
   };
 
   export let nodes: Writable<Node[]>;
@@ -158,6 +163,7 @@
     {nodeTypes}
     {nodes}
     {edges}
+    {edgeTypes}
     snapGrid={[25, 25]}
     fitView
     on:nodeclick={(event) => console.log("on node click", event.detail.node)}
