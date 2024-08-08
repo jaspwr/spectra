@@ -100,6 +100,7 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
 
   rename(item: Shader, name: string) {
     item.updateFilename(name);
+    projects.update((p) => p);
   };
 }
 

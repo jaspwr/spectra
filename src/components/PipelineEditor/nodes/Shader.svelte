@@ -65,7 +65,7 @@
   <div>
     {#if data.shaderSourceFileName !== undefined}
       <select bind:value={data.shaderSourceFileName}>
-        {#each project?.shaderFiles ?? [] as shader}
+        {#each (project?.shaderFiles ?? []).filter(s => s.data.type !== ShaderType.Invalid) as shader}
           <option value={shader.filename}>{shader.filename}</option>
         {/each}
       </select>

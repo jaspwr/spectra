@@ -19,6 +19,7 @@ import { writable, type Writable } from "svelte/store";
 import { hashString } from "@/utils";
 
 export enum ShaderType {
+  Invalid,
   Frag,
   Vert,
   Comp,
@@ -100,9 +101,8 @@ export class Shader {
         type = ShaderType.Comp;
         break;
       default:
-        throw new Error(
-          `Unknown shader type: ${extension} for ${this.filename}`
-        );
+        type = ShaderType.Invalid;
+        break;
     }
 
     this._data.type = type;

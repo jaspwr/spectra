@@ -23,13 +23,13 @@
   export let data: {};
 </script>
 
-<div class="output_">
+<div class="__output">
   <strong>Macro Output</strong>
   <Handle type="target" position={Position.Left} id="in"/>
 </div>
 
 <style>
-  .output_ {
+  .__output {
     width: 65px;
   }
 </style>
