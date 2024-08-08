@@ -18,14 +18,14 @@
 <script lang="ts">
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
   import { writable, type Writable } from "svelte/store";
-  import { projects, selectedProject } from "@/project";
+  import { scenes, selectedScene } from "@/scene";
   import { GeometryNodeType } from "./geometry";
     import TypedHandle from "../TypedHandle.svelte";
     import { KnownType } from "@/type";
 
   type $$Props = NodeProps;
 
-  $: project = $projects.find((p) => p.name === $selectedProject);
+  $: scene = $scenes.find((p) => p.name === $selectedScene);
 
   export let data: {
     type: GeometryNodeType;

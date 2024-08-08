@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { toUrl, type Project } from "@/project";
+  import { toUrl, type Scene } from "@/scene";
 
-  export let project: Project;
+  export let scene: Scene;
 
   let startPaused = false;
   let startIdle = false;
-  let defaultSourceFile = project.shaderFiles[0]?.filename ?? "";
+  let defaultSourceFile = scene.shaderFiles[0]?.filename ?? "";
 
   let url = new URL(window.location.href);
   url.searchParams.set("embedded", "true");
@@ -14,7 +14,7 @@
     url.searchParams.set("startPaused", startPaused ? "true" : "false");
     url.searchParams.set("startIdle", startIdle ? "true" : "false");
     url.searchParams.set("defaultSourceFile", encodeURIComponent(defaultSourceFile));
-    url.searchParams.set("project", toUrl(project));
+    url.searchParams.set("scene", toUrl(scene));
     url = url;
   }
 
@@ -34,7 +34,7 @@
   </li>
   <li class="checkbox-and-label">
     <select bind:value={defaultSourceFile}>
-      {#each project.shaderFiles as file}
+      {#each scene.shaderFiles as file}
         <option>{file.filename}</option>
       {/each}
     </select>

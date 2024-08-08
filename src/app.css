@@ -3,6 +3,7 @@
   --text-prim: #e6ebf4;
   --bg-sec: #232130;
   --text-sec: #fcfdff;
+  --shadow: 0 0 20px rgba(0, 0, 0, 0.9);
 }
 
 html {
@@ -15,11 +16,17 @@ button {
   cursor: pointer;
   border: none;
   padding: 0.3rem 0.4rem;
-  background: var(--bg-sec);
+  background-color: var(--bg-sec);
   color: var(--text-sec);
   min-width: 2rem;
   border: solid 1px var(--text-prim);
   height: 27.5px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+button:hover {
+  background-color: var(--bg-prim);
+  color: var(--text-prim);
 }
 
 a {

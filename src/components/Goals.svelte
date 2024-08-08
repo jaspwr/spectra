@@ -16,9 +16,9 @@
 -->
 
 <script lang="ts">
-  import { projects, selectedProject } from "../project";
+  import { scenes, selectedScene } from "../scene";
 
-    $: list = $projects.find((p) => p.name === $selectedProject)?.goals || [];
+    $: list = $scenes.find((p) => p.name === $selectedScene)?.goals || [];
 </script>
 
 <h2 class="header">Goals</h2>

@@ -19,14 +19,12 @@
   import { SvelteFlowProvider } from "@xyflow/svelte";
   import PipelineEditor from "./PipelineEditor.svelte";
   import { MACRO_EDITOR_SELECTED_MACRO, newMacro } from "@/macro";
-  import FileTree from "../FileTree.svelte";
-  import { projects, selectedProject, type Project } from "@/project";
+  import FileTree from "@/components/FileTree/FileTree.svelte";
+  import { scenes, selectedScene, type Scene } from "@/scene";
   import { MacroProvider } from "@/filetree";
 
-  $: project = $projects.find((p) => p.name === $selectedProject);
-  $: macro = project?.macros.find(
-    (m) => m.name === $MACRO_EDITOR_SELECTED_MACRO,
-  );
+  $: scene = $scenes.find((p) => p.name === $selectedScene);
+  $: macro = scene?.macros.find((m) => m.name === $MACRO_EDITOR_SELECTED_MACRO);
 
   $: inputLabels = macro?.inputLabels;
 
@@ -45,11 +43,9 @@
 
   MACRO_EDITOR_SELECTED_MACRO.subscribe(forceRerender);
 
-  $: if (macro === undefined && (project?.macros.length ?? 0 > 0)) {
-    MACRO_EDITOR_SELECTED_MACRO.set(project!.macros[0].name);
-    macro = project?.macros.find(
-      (m) => m.name === $MACRO_EDITOR_SELECTED_MACRO,
-    );
+  $: if (macro === undefined && (scene?.macros.length ?? 0 > 0)) {
+    MACRO_EDITOR_SELECTED_MACRO.set(scene!.macros[0].name);
+    macro = scene?.macros.find((m) => m.name === $MACRO_EDITOR_SELECTED_MACRO);
   }
 </script>
 
@@ -59,7 +55,7 @@
   </div>
   {#if macro === undefined}
     <div class="center">
-      <p>No macros found in the project.</p>
+      <p>No macros found in the scene.</p>
     </div>
   {:else}
     <div class="macro-meta">

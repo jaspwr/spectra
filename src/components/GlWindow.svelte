@@ -18,21 +18,21 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { PipeLine } from "../pipeline";
-  import type { Project } from "../project";
+  import type { Scene } from "../scene";
   import { WINDOW_ASPECT, WINDOW_HEIGHT, WINDOW_WIDTH } from "@/gl/utils";
-  import { FPS, PLAYING } from "../utils";
+  import { FPS, GL_CONTEXT, PLAYING } from "../utils";
 
-  export let project: Project | null;
+  export let scene: Scene | null;
 
   let pipeline: PipeLine | null = null;
 
-  // When the project is recompiled or the window size changes,
+  // When the scene is recompiled or the window size changes,
   // the window is rererended even if paused.
   let pausedNeedsUpdate = true;
 
   $: {
-    if (project !== null && gl !== null) {
-      pipeline = new PipeLine(project, gl);
+    if (scene !== null && gl !== null) {
+      pipeline = new PipeLine(scene, gl);
     }
     pausedNeedsUpdate = true;
   }
@@ -106,6 +106,10 @@
     resize();
 
     requestAnimationFrame(loop);
+
+    if (GL_CONTEXT.gl === null) {
+      GL_CONTEXT.gl = gl;
+    }
   });
 </script>
 

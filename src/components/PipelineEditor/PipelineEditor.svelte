@@ -16,7 +16,7 @@
 -->
 
 <script lang="ts">
-  import { writable, type Writable } from "svelte/store";
+  import { type Writable } from "svelte/store";
   import {
     SvelteFlow,
     Controls,
@@ -24,7 +24,6 @@
     BackgroundVariant,
     type Node,
     useSvelteFlow,
-    useEdges,
     type Edge,
     type IsValidConnection,
   } from "@xyflow/svelte";
@@ -52,6 +51,8 @@
     geometry: Geometry,
     uniform: Uniform,
     macro: MacroNode,
+    output: MacroOutput,
+    inputs: MacroInputs,
   };
 
   const edgeTypes = {
@@ -61,13 +62,6 @@
   export let nodes: Writable<Node[]>;
   export let edges: Writable<Edge[]>;
   export let isMacro: boolean = false;
-
-  if (isMacro) {
-    nodeTypes["output"] = MacroOutput;
-    nodeTypes["inputs"] = MacroInputs;
-  }
-
-  let editingMacro: boolean = true;
 
   const { screenToFlowPosition } = useSvelteFlow();
 
