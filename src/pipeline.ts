@@ -16,7 +16,7 @@
  * */
 
 import type { Edge, Node } from "@xyflow/svelte";
-import type { Project } from "./project";
+import type { Scene } from "./scene";
 import { Shader } from "./gl/shader";
 import { loadOBJ } from "./obj";
 import { GL_ERRORS, type Vec2, type Vec3 } from "./utils";
@@ -34,22 +34,22 @@ import { get } from "svelte/store";
 export class PipeLine {
   private steps: RenderStep[] = [];
 
-  public constructor(project: Project, gl: WebGL2RenderingContext) {
+  public constructor(scene: Scene, gl: WebGL2RenderingContext) {
     let errors: string[] = [];
 
     try {
       let nodes: Node[] | undefined, edges: Edge[] | undefined;
-      nodes = [...get(project.pipelineGraph.nodes)].map(n => ({ ...n }));
-      edges = [...get(project.pipelineGraph.edges)].map(e => ({ ...e }));
+      nodes = [...get(scene.pipelineGraph.nodes)].map(n => ({ ...n }));
+      edges = [...get(scene.pipelineGraph.edges)].map(e => ({ ...e }));
 
       if (nodes === undefined || edges === undefined)
         throw ["Error in graph data"];
 
-      const { ns, es } = expandMacros(nodes, edges, project.macros);
+      const { ns, es } = expandMacros(nodes, edges, scene.macros);
       nodes = ns;
       edges = es;
-      // project.pipelineGraph.nodes.set(ns);
-      // project.pipelineGraph.edges.set(es);
+      // scene.pipelineGraph.nodes.set(ns);
+      // scene.pipelineGraph.edges.set(es);
 
       const framebuffers = createFramebuffers(nodes, gl);
       const textures = createTextures(nodes, gl);
@@ -57,7 +57,7 @@ export class PipeLine {
       const steps = nodes
         .filter((n) => n.type === "gl-program")
         .map((n) =>
-          createRenderStep(n, nodes!, edges!, project.shaderFiles, textures, framebuffers, gl)
+          createRenderStep(n, nodes!, edges!, scene.shaderFiles, textures, framebuffers, gl)
         );
 
       Promise.all(steps).then((steps) => {

@@ -17,7 +17,7 @@
 
 <script lang="ts">
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
-  import { projects, selectedProject } from "@/project";
+  import { scenes, selectedScene } from "@/scene";
   import {
     UniformNodeType,
     type UniformNodeData,
@@ -29,7 +29,7 @@
 
   type $$Props = NodeProps;
 
-  $: project = $projects.find((p) => p.name === $selectedProject);
+  $: scene = $scenes.find((p) => p.name === $selectedScene);
 
   export let data: UniformNodeData = { type: UniformNodeType.Time };
 

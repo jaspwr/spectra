@@ -1,6 +1,6 @@
 import { get, writable, type Writable } from "svelte/store";
 import { Shader, ShaderType } from "./gl/shader";
-import { projects, selectedProject } from "@/project";
+import { scenes, selectedScene } from "@/scene";
 import { MACRO_EDITOR_SELECTED_MACRO, newMacro, type Macro } from "./macro";
 
 export abstract class FileTreeProvider<Item> {
@@ -18,25 +18,25 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
   constructor() {
     super();
 
-    projects.subscribe(() => this.setList());
-    selectedProject.subscribe(() => this.setList());
-    projects.subscribe(() => this.setSelected());
+    scenes.subscribe(() => this.setList());
+    selectedScene.subscribe(() => this.setList());
+    scenes.subscribe(() => this.setSelected());
 
     this.setList();
     this.setSelected();
   }
 
   private setList() {
-    const project = get(projects).find((p) => p.name === get(selectedProject));
-    if (project) {
-      this.list.set(project.shaderFiles);
+    const scene = get(scenes).find((p) => p.name === get(selectedScene));
+    if (scene) {
+      this.list.set(scene.shaderFiles);
     }
   }
 
   private setSelected() {
-    const project = get(projects).find((p) => p.name === get(selectedProject));
-    if (project?.selectedShaderFile) {
-      this.selected = project.selectedShaderFile;
+    const scene = get(scenes).find((p) => p.name === get(selectedScene));
+    if (scene?.selectedShaderFile) {
+      this.selected = scene.selectedShaderFile;
     }
   }
 
@@ -58,38 +58,38 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
   };
 
   add() {
-    projects.update((p) => {
-      let project = p.find((p) => p.name === get(selectedProject));
-      if (project) {
+    scenes.update((p) => {
+      let scene = p.find((p) => p.name === get(selectedScene));
+      if (scene) {
         const name = prompt("Shader name") ?? "_.frag";
-        project.shaderFiles.push(new Shader(name, ""));
+        scene.shaderFiles.push(new Shader(name, ""));
       }
       return p;
     });
   };
 
   remove() {
-    projects.update((p) => {
-      let project = p.find((p) => p.name === get(selectedProject));
-      if (project) {
-        let index = project.shaderFiles.findIndex(
+    scenes.update((p) => {
+      let scene = p.find((p) => p.name === get(selectedScene));
+      if (scene) {
+        let index = scene.shaderFiles.findIndex(
           (s) => s.filename === get(this.selected),
         );
 
         if (index !== -1) {
           if (
             window.confirm(
-              `Are you sure you want to delete ${project.shaderFiles[index].filename}?`,
+              `Are you sure you want to delete ${scene.shaderFiles[index].filename}?`,
             ) === false
           ) {
             return p;
           }
 
-          project.shaderFiles.splice(index, 1);
+          scene.shaderFiles.splice(index, 1);
 
           this.selected?.set(
-            project.shaderFiles[index]?.filename ||
-            project.shaderFiles[index - 1]?.filename ||
+            scene.shaderFiles[index]?.filename ||
+            scene.shaderFiles[index - 1]?.filename ||
             "",
           );
         }
@@ -100,7 +100,7 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
 
   rename(item: Shader, name: string) {
     item.updateFilename(name);
-    projects.update((p) => p);
+    scenes.update((p) => p);
   };
 }
 
@@ -109,16 +109,16 @@ export class MacroProvider extends FileTreeProvider<Macro> {
     super();
     this.selected = MACRO_EDITOR_SELECTED_MACRO;
 
-    projects.subscribe(() => this.setList());
-    selectedProject.subscribe(() => this.setList());
+    scenes.subscribe(() => this.setList());
+    selectedScene.subscribe(() => this.setList());
 
     this.setList();
   }
 
   private setList() {
-    const project = get(projects).find((p) => p.name === get(selectedProject));
-    if (project) {
-      this.list.set(project.macros);
+    const scene = get(scenes).find((p) => p.name === get(selectedScene));
+    if (scene) {
+      this.list.set(scene.macros);
     }
   }
 
@@ -131,36 +131,36 @@ export class MacroProvider extends FileTreeProvider<Macro> {
   }
 
   add() {
-    projects.update((p) => {
-      let project = p.find((p) => p.name === get(selectedProject));
-      if (project) {
+    scenes.update((p) => {
+      let scene = p.find((p) => p.name === get(selectedScene));
+      if (scene) {
         const name = prompt("Macro Name") ?? "new macro";
-        project.macros.push(newMacro(name));
+        scene.macros.push(newMacro(name));
       }
       return p;
     });
   }
 
   remove() {
-    projects.update((p) => {
-      let project = p.find((p) => p.name === get(selectedProject));
-      if (project) {
-        let index = project.macros.findIndex((s) => s.name === get(this.selected));
+    scenes.update((p) => {
+      let scene = p.find((p) => p.name === get(selectedScene));
+      if (scene) {
+        let index = scene.macros.findIndex((s) => s.name === get(this.selected));
 
         if (index !== -1) {
           if (
             window.confirm(
-              `Are you sure you want to delete ${project.macros[index].name}?`,
+              `Are you sure you want to delete ${scene.macros[index].name}?`,
             ) === false
           ) {
             return p;
           }
 
-          project.macros.splice(index, 1);
+          scene.macros.splice(index, 1);
 
           this.selected.set(
-            project.macros[index]?.name ||
-            project.macros[index - 1]?.name ||
+            scene.macros[index]?.name ||
+            scene.macros[index - 1]?.name ||
             "",
           );
         }

@@ -18,7 +18,7 @@
 <script lang="ts">
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
   import { writable, type Writable } from "svelte/store";
-  import { projects, selectedProject } from "@/project";
+  import { scenes, selectedScene } from "@/scene";
   import InputHandleList from "../InputHandleList.svelte";
     import TypedHandle from "../TypedHandle.svelte";
     import { KnownType, type PipelineConnectionType } from "@/type";
@@ -26,7 +26,7 @@
 
   type $$Props = NodeProps;
 
-  $: project = $projects.find((p) => p.name === $selectedProject);
+  $: scene = $scenes.find((p) => p.name === $selectedScene);
 
   export let data: { shaderSourceFileName: string } = {
     shaderSourceFileName: "",
@@ -36,7 +36,7 @@
     data.shaderSourceFileName = "";
   }
 
-  $: shader = project?.shaderFiles.find(
+  $: shader = scene?.shaderFiles.find(
     (s) => s.filename === data.shaderSourceFileName,
   );
 
@@ -65,7 +65,7 @@
   <div>
     {#if data.shaderSourceFileName !== undefined}
       <select bind:value={data.shaderSourceFileName}>
-        {#each (project?.shaderFiles ?? []).filter(s => s.data.type !== ShaderType.Invalid) as shader}
+        {#each (scene?.shaderFiles ?? []).filter(s => s.data.type !== ShaderType.Invalid) as shader}
           <option value={shader.filename}>{shader.filename}</option>
         {/each}
       </select>

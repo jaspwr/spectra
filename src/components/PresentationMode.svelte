@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Project } from "@/project";
+  import type { Scene } from "@/scene";
   import CloseButton from "./CloseButton.svelte";
   import {
     type Presentation,
@@ -18,10 +18,10 @@
   const renderers = { blockKatex: KatexRenderer, inlineKatex: KatexRenderer };
 
   export let onClose: () => void;
-  export let project: Project;
+  export let scene: Scene;
   export let recompile: () => void;
 
-  let presentation: Presentation = project.presentation ?? DEFAULT_PRESENTATION;
+  let presentation: Presentation = scene.presentation ?? DEFAULT_PRESENTATION;
 
   let slideIndex = 0;
 
@@ -39,7 +39,7 @@
       {#if column.type === ColumnType.Markdown}
         <Markdown source={column.markdownContent} {renderers} {options} />
       {:else if column.type === ColumnType.GlWindow}
-        <GlWindow {project} />
+        <GlWindow {scene} />
         <button on:click={recompile} class="recompile">Recompile</button>
       {:else if column.type === ColumnType.CodeEditor}
         <CodeEditor />

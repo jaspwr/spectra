@@ -20,7 +20,7 @@
   import type * as Monaco from "monaco-editor/esm/vs/editor/editor.api";
   // @ts-ignore
   import { initVimMode } from "monaco-vim";
-  import { projects, selectedProject } from "../project";
+  import { scenes, selectedScene } from "../scene";
 
   let editor: Monaco.editor.IStandaloneCodeEditor;
   let monaco: typeof Monaco;
@@ -29,9 +29,9 @@
   let vimCtx: any;
   export let vimMode = false;
 
-  $: project = $projects.find((p) => p.name === $selectedProject);
-  $: selectedFile = project?.selectedShaderFile;
-  $: file = project?.shaderFiles.find((s) => s.filename === $selectedFile);
+  $: scene = $scenes.find((p) => p.name === $selectedScene);
+  $: selectedFile = scene?.selectedShaderFile;
+  $: file = scene?.shaderFiles.find((s) => s.filename === $selectedFile);
 
   $: showEditor = $selectedFile !== undefined && file;
 

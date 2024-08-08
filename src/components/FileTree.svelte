@@ -16,15 +16,15 @@
 -->
 
 <script lang="ts">
-  import { projects, selectedProject, type Project } from "../project";
+  import { scenes, selectedScene, type Scene } from "../scene";
   import FileTreeRenameBox from "./FileTreeRenameBox.svelte";
   import type { FileTreeProvider } from "@/filetree";
 
   // $: list =
-  // $projects.find((p) => p.name === $selectedProject)?.shaderFiles || [];
+  // $scenes.find((p) => p.name === $selectedScene)?.shaderFiles || [];
 
-  // $: selected = $projects.find(
-  //   (p) => p.name === $selectedProject,
+  // $: selected = $scenes.find(
+  //   (p) => p.name === $selectedScene,
   // )?.selectedShaderFile;
 
   type Item = $$Generic;

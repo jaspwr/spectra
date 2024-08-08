@@ -18,12 +18,12 @@
 <script lang="ts">
   import PipelineEditor from "./components/PipelineEditor/PipelineEditor.svelte";
   import {
-    projects,
-    selectedProject,
+    scenes,
+    selectedScene,
     serialize,
     toUrl,
-    type Project,
-  } from "./project";
+    type Scene,
+  } from "./scene";
   import { FPS, GL_ERRORS, PLAYING } from "./utils";
 
   import CodeEditor from "./components/CodeEditor.svelte";
@@ -43,19 +43,19 @@
   const isEmbedded = URL_PARAMETERS.isEmbedded;
   let presentationMode = false;
 
-  let _selected = $selectedProject;
-  $: selectedProject.set(_selected);
+  let _selected = $selectedScene;
+  $: selectedScene.set(_selected);
 
   let editorVimMode = false;
 
-  $: project = $projects.find((p) => p.name === $selectedProject);
-  let displayingProject: Project | null = null;
+  $: scene = $scenes.find((p) => p.name === $selectedScene);
+  let displayingScene: Scene | null = null;
 
   const recompile = () => {
     GL_ERRORS.set([]);
-    projects.update((p) => p);
-    if (project === undefined) return;
-    displayingProject = project;
+    scenes.update((p) => p);
+    if (scene === undefined) return;
+    displayingScene = scene;
   };
 
   let forcingRerender = false;
@@ -67,10 +67,10 @@
     }, 10);
   };
 
-  let preProjectName = "";
-  $: if (preProjectName !== _selected) {
+  let preSceneName = "";
+  $: if (preSceneName !== _selected) {
     document.title = _selected;
-    preProjectName = _selected;
+    preSceneName = _selected;
     recompile();
     forceRerender();
   }
@@ -78,11 +78,11 @@
   recompile();
 
   const save = () => {
-    if (project === undefined) return;
-    const serialized = serialize(project);
-    localStorage.setItem(project.name, serialized);
+    if (scene === undefined) return;
+    const serialized = serialize(scene);
+    localStorage.setItem(scene.name, serialized);
     console.log(serialized);
-    const url = toUrl(project);
+    const url = toUrl(scene);
     console.log(url);
     console.log(
       "url length",
@@ -122,13 +122,13 @@
         </div>
       </div>
       <div style="display: flex; align-items: center; padding-right: 1em">
-        <a href={nonEmbedUrl()} target="_blank"> View full project </a>
+        <a href={nonEmbedUrl()} target="_blank"> View full scene </a>
       </div>
     </div>
     <div class="embed-gl-window">
       {#if !URL_PARAMETERS.startIdle || started}
         <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
-          <GlWindow project={displayingProject} />
+          <GlWindow scene={displayingScene} />
         </div>
         {#if $GL_ERRORS.length > 0}
           <ErrorList errors={$GL_ERRORS} />
@@ -145,8 +145,8 @@
       <CodeEditor vimMode={editorVimMode} />
     </div>
   </div>
-{:else if presentationMode && project !== undefined}
-  <PresentationMode {recompile} {project} onClose={() => presentationMode = false} />
+{:else if presentationMode && scene !== undefined}
+  <PresentationMode {recompile} {scene} onClose={() => presentationMode = false} />
 {:else}
   <div class="layout">
     <div class="top-bar">
@@ -171,10 +171,10 @@
         </button>
       </div>
       <div class="top-bar-item">
-        Project:
+        Scene:
         <select bind:value={_selected}>
-          {#each $projects as project}
-            <option>{project.name}</option>
+          {#each $scenes as scene}
+            <option>{scene.name}</option>
           {/each}
         </select>
       </div>
@@ -202,7 +202,7 @@
     </div>
     <div class="gl-window">
       <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
-        <GlWindow project={displayingProject} />
+        <GlWindow scene={displayingScene} />
       </div>
       {#if $GL_ERRORS.length > 0}
         <ErrorList errors={$GL_ERRORS} />
@@ -212,11 +212,11 @@
       <CodeEditor vimMode={editorVimMode} />
     </div>
     <div class="pipeline-editor">
-      {#if project !== undefined && !forcingRerender}
+      {#if scene !== undefined && !forcingRerender}
         <SvelteFlowProvider>
           <PipelineEditor
-            nodes={project.pipelineGraph.nodes}
-            edges={project.pipelineGraph.edges}
+            nodes={scene.pipelineGraph.nodes}
+            edges={scene.pipelineGraph.edges}
           />
         </SvelteFlowProvider>
       {/if}
@@ -251,13 +251,13 @@
     This application is still in development. Some features may not work as
     expected and breaking changed may be introduced.
   </Popout>
-{:else if appState === AppState.CreatingEmbed && project !== undefined}
+{:else if appState === AppState.CreatingEmbed && scene !== undefined}
   <Popout
     onClose={() => {
       appState = AppState.Normal;
     }}
   >
-    <EmbedCreator {project} />
+    <EmbedCreator {scene} />
   </Popout>
 {/if}
 

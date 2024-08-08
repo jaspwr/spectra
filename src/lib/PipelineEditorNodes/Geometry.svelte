@@ -2,11 +2,11 @@
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
   import { writable, type Writable } from "svelte/store";
   import type { Shader } from "../../shader";
-  import { projects, selectedProject } from "../../project";
+  import { scenes, selectedScene } from "../../scene";
 
   type $$Props = NodeProps;
 
-  $: project = $projects.find((p) => p.name === $selectedProject);
+  $: scene = $scenes.find((p) => p.name === $selectedScene);
 
   export let data: { type: string; modelSrc: string } = {
     type: "Screen Quad",

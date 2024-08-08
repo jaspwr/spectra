@@ -1,7 +1,7 @@
 export interface Presentation {
   slides: Slide[];
-  previousProject?: string;
-  nextProject?: string;
+  previousScene?: string;
+  nextScene?: string;
 }
 
 export interface Slide {

@@ -17,7 +17,7 @@
 
 <script lang="ts">
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
-  import { projects, selectedProject, type Project } from "@/project";
+  import { scenes, selectedScene, type Scene } from "@/scene";
   import InputHandleList from "../InputHandleList.svelte";
 
   type $$Props = NodeProps;
@@ -26,10 +26,10 @@
     name: string;
   };
 
-  $: project = $projects.find((p) => p.name === $selectedProject);
-  $: macro = project?.macros.find((m) => m.name === data.name);
+  $: scene = $scenes.find((p) => p.name === $selectedScene);
+  $: macro = scene?.macros.find((m) => m.name === data.name);
   $: handles = macro?.inputLabels;
-  $: macroNames = project?.macros.map((m) => m.name) ?? [];
+  $: macroNames = scene?.macros.map((m) => m.name) ?? [];
 </script>
 
 <div>
