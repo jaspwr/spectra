@@ -17,18 +17,12 @@
 
 <script lang="ts">
   import PipelineEditor from "./components/PipelineEditor/PipelineEditor.svelte";
-  import {
-    scenes,
-    selectedScene,
-    serialize,
-    toUrl,
-    type Scene,
-  } from "./scene";
+  import { scenes, selectedScene, serialize, toUrl, type Scene } from "./scene";
   import { FPS, GL_ERRORS, PLAYING } from "./utils";
 
   import CodeEditor from "./components/CodeEditor.svelte";
   import ErrorList from "./components/ErrorList.svelte";
-  import FileTree from "./components/FileTree.svelte";
+  import FileTree from "./components/FileTree/FileTree.svelte";
   import GlWindow from "./components/GlWindow.svelte";
   import Goals from "./components/Goals.svelte";
   import { SvelteFlowProvider } from "@xyflow/svelte";
@@ -39,6 +33,9 @@
   import EmbedCreator from "./components/EmbedCreator.svelte";
   import { ShaderFilesProvider } from "./filetree";
   import PresentationMode from "./components/PresentationMode.svelte";
+  import NavBar from "./components/NavBar/NavBar.svelte";
+  import type { NavBarSection } from "./components/NavBar/navbar";
+  import { writable } from "svelte/store";
 
   const isEmbedded = URL_PARAMETERS.isEmbedded;
   let presentationMode = false;
@@ -46,7 +43,7 @@
   let _selected = $selectedScene;
   $: selectedScene.set(_selected);
 
-  let editorVimMode = false;
+  let editorVimMode = writable(false);
 
   $: scene = $scenes.find((p) => p.name === $selectedScene);
   let displayingScene: Scene | null = null;
@@ -105,6 +102,76 @@
     : AppState.DevelopmentStateInfo;
 
   let started = false;
+
+  const navbar: NavBarSection[] = [
+    {
+      title: "File",
+      items: [
+        {
+          title: "New",
+          action: () => console.log("New"),
+        },
+        {
+          title: "Save",
+          action: () => console.log("Save"),
+        },
+        {
+          title: "Save As",
+          action: () => console.log("Save As"),
+        },
+        {
+          title: "Open",
+          action: () => console.log("Open"),
+        },
+      ],
+    },
+    {
+      title: "Scene",
+      items: [
+        {
+          title: "Manage Scenes",
+          action: () => console.log("Save"),
+        },
+        {
+          title: "Create Embed",
+          action: () => (appState = AppState.CreatingEmbed),
+        },
+        {
+          title: "Manage Macros",
+          action: () => (appState = AppState.EditingMacro),
+        },
+      ],
+    },
+    {
+      title: "View",
+      items: [
+        {
+          title: "Presentation Mode",
+          action: () => (presentationMode = true),
+        },
+      ],
+    },
+    {
+      title: "Preferences",
+      items: [
+        {
+          title: "Vim Mode",
+          booleanOption: editorVimMode,
+        },
+      ],
+    },
+    {
+      title: "Help",
+      items: [
+        {
+          title: "Documentation",
+          action: () => {
+            window.open("https://github.com/jaspwr/spectra", "_blank");
+          },
+        },
+      ],
+    },
+  ];
 </script>
 
 {#if isEmbedded}
@@ -142,11 +209,15 @@
       {/if}
     </div>
     <div class="embed-code-editor">
-      <CodeEditor vimMode={editorVimMode} />
+      <CodeEditor vimMode={$editorVimMode} />
     </div>
   </div>
 {:else if presentationMode && scene !== undefined}
-  <PresentationMode {recompile} {scene} onClose={() => presentationMode = false} />
+  <PresentationMode
+    {recompile}
+    {scene}
+    onClose={() => (presentationMode = false)}
+  />
 {:else}
   <div class="layout">
     <div class="top-bar">
@@ -163,12 +234,6 @@
             Recompile
           </div>
         </button>
-        <button on:click={save}>
-          <div class="button-contents">
-            <img class="icon" src="icons/floppy.svg" alt="save" />
-            Save
-          </div>
-        </button>
       </div>
       <div class="top-bar-item">
         Scene:
@@ -178,27 +243,7 @@
           {/each}
         </select>
       </div>
-      <div class="top-bar-item checkbox-and-label">
-        <input type="checkbox" bind:checked={editorVimMode} />
-        Vim Mode
-      </div>
-      <div class="top-bar-item">
-        <button on:click={() => (appState = AppState.EditingMacro)}>
-          <div class="button-contents">Configure Macros</div>
-        </button>
-        <button
-          on:click={() => (appState = AppState.CreatingEmbed)}
-          style="margin-left: 7px;"
-        >
-          <div class="button-contents">Create Embed</div>
-        </button>
-        <button
-          on:click={() => (presentationMode = true)}
-          style="margin-left: 7px;"
-        >
-          <div class="button-contents">Presentation Mode</div>
-        </button>
-      </div>
+      <NavBar {navbar} />
     </div>
     <div class="gl-window">
       <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
@@ -209,7 +254,7 @@
       {/if}
     </div>
     <div class="code-editor">
-      <CodeEditor vimMode={editorVimMode} />
+      <CodeEditor vimMode={$editorVimMode} />
     </div>
     <div class="pipeline-editor">
       {#if scene !== undefined && !forcingRerender}

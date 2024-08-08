@@ -17,7 +17,7 @@
 
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-    import CloseButton from "./CloseButton.svelte";
+  import CloseButton from "./CloseButton.svelte";
 
   export let onClose: () => void;
 </script>

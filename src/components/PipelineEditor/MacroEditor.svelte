@@ -19,14 +19,12 @@
   import { SvelteFlowProvider } from "@xyflow/svelte";
   import PipelineEditor from "./PipelineEditor.svelte";
   import { MACRO_EDITOR_SELECTED_MACRO, newMacro } from "@/macro";
-  import FileTree from "../FileTree.svelte";
+  import FileTree from "@/components/FileTree/FileTree.svelte";
   import { scenes, selectedScene, type Scene } from "@/scene";
   import { MacroProvider } from "@/filetree";
 
   $: scene = $scenes.find((p) => p.name === $selectedScene);
-  $: macro = scene?.macros.find(
-    (m) => m.name === $MACRO_EDITOR_SELECTED_MACRO,
-  );
+  $: macro = scene?.macros.find((m) => m.name === $MACRO_EDITOR_SELECTED_MACRO);
 
   $: inputLabels = macro?.inputLabels;
 
@@ -47,9 +45,7 @@
 
   $: if (macro === undefined && (scene?.macros.length ?? 0 > 0)) {
     MACRO_EDITOR_SELECTED_MACRO.set(scene!.macros[0].name);
-    macro = scene?.macros.find(
-      (m) => m.name === $MACRO_EDITOR_SELECTED_MACRO,
-    );
+    macro = scene?.macros.find((m) => m.name === $MACRO_EDITOR_SELECTED_MACRO);
   }
 </script>
 

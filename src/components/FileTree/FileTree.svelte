@@ -16,8 +16,8 @@
 -->
 
 <script lang="ts">
-  import { scenes, selectedScene, type Scene } from "../scene";
-  import FileTreeRenameBox from "./FileTreeRenameBox.svelte";
+  import { scenes, selectedScene, type Scene } from "@/scene";
+  import FileTreeRenameBox from "./RenameBox.svelte";
   import type { FileTreeProvider } from "@/filetree";
 
   // $: list =
