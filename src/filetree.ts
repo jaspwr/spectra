@@ -1,6 +1,6 @@
 import { get, writable, type Writable } from "svelte/store";
 import { Shader, ShaderType } from "./gl/shader";
-import { scenes, selectedScene } from "@/scene";
+import { scenes, selectedScene, type Scene } from "@/scene";
 import { MACRO_EDITOR_SELECTED_MACRO, newMacro, type Macro } from "./macro";
 
 export abstract class FileTreeProvider<Item> {
@@ -77,14 +77,6 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
         );
 
         if (index !== -1) {
-          if (
-            window.confirm(
-              `Are you sure you want to delete ${scene.shaderFiles[index].filename}?`,
-            ) === false
-          ) {
-            return p;
-          }
-
           scene.shaderFiles.splice(index, 1);
 
           this.selected?.set(
@@ -148,14 +140,6 @@ export class MacroProvider extends FileTreeProvider<Macro> {
         let index = scene.macros.findIndex((s) => s.name === get(this.selected));
 
         if (index !== -1) {
-          if (
-            window.confirm(
-              `Are you sure you want to delete ${scene.macros[index].name}?`,
-            ) === false
-          ) {
-            return p;
-          }
-
           scene.macros.splice(index, 1);
 
           this.selected.set(
@@ -171,5 +155,54 @@ export class MacroProvider extends FileTreeProvider<Macro> {
 
   rename(item: Macro, name: string) {
     item.name = name;
+  }
+}
+
+export class SceneProvider extends FileTreeProvider<Scene> {
+  constructor() {
+    super();
+    this.list = scenes;
+  }
+
+  iconPath(_: Scene): string | null {
+    return "icons/teapot.svg";
+  }
+
+  itemName(scene: Scene): string {
+    return scene.name;
+  }
+
+  add() {
+    scenes.update((p) => {
+      const name = prompt("Scene Name") ?? "new scene";
+      p.push({
+        name,
+        goals: [],
+        shaderFiles: [],
+        pipelineGraph: {
+          nodes: writable([]),
+          edges: writable([]),
+        },
+        macros: [],
+      });
+      return p;
+    });
+  }
+
+  remove() {
+    scenes.update((p) => {
+      let index = p.findIndex((s) => s.name === get(this.selected));
+      if (index !== -1) {
+        p.splice(index, 1);
+
+        this.selected.set(p[index]?.name || p[index - 1]?.name || "");
+      }
+      return p;
+    });
+  }
+
+  rename(item: Scene, name: string) {
+    item.name = name;
+    scenes.update((p) => p);
   }
 }

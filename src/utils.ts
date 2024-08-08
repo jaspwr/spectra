@@ -99,6 +99,7 @@ export function filterNonDigits(word: string): string {
 export const GL_ERRORS: Writable<string[]> = writable([]);
 export const FPS: Writable<number> = writable(0);
 export const PLAYING: Writable<boolean> = writable(!URL_PARAMETERS.startPaused ?? true);
+export const GL_CONTEXT: { gl: WebGL2RenderingContext | null } = { gl: null };
 
 const NODE_HANDLE_TYPES: Record<string, PipelineConnectionType> = {};
 

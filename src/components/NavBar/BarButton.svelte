@@ -8,7 +8,7 @@
 </script>
 
 <div class="section-button">
-  <button on:click={() => (showing = true)}>
+  <button on:click={() => (showing = true)} class:selected={showing}>
     {section.title}
   </button>
   {#if showing}
@@ -27,9 +27,14 @@
     all: unset;
     height: var(--nav-bar-height);
     padding: 0 10px;
+    transition: background-color 0.2s;
   }
 
   button:hover {
+    background-color: var(--bg-sec);
+  }
+
+  .selected {
     background-color: var(--bg-sec);
   }
 </style>

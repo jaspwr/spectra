@@ -17,10 +17,11 @@
 
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import type * as Monaco from "monaco-editor/esm/vs/editor/editor.api";
+  import * as Monaco from "monaco-editor/esm/vs/editor/editor.api";
   // @ts-ignore
   import { initVimMode } from "monaco-vim";
   import { scenes, selectedScene } from "../scene";
+  import { GL_CONTEXT } from "@/utils";
 
   let editor: Monaco.editor.IStandaloneCodeEditor;
   let monaco: typeof Monaco;
@@ -89,10 +90,55 @@
     const model = monaco.editor.createModel("", "glsl");
     editor.setModel(model);
 
+    let timeout: null | number = null;
+
+    const decorationsCollection = editor.createDecorationsCollection();
+
     editor.onDidChangeModelContent(() => {
       if (!file) return;
       file.updateContents(editor.getValue());
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        if (GL_CONTEXT.gl === null) return;
+        const lints = file.lint(GL_CONTEXT.gl);
+
+        const newDecorations = lints
+          .map((lint) => [
+            {
+              range: lint.range,
+              options: {
+                inlineClassName: `lint-${lint.severity}`,
+                hoverMessage: {
+                  value: lint.message,
+                },
+              },
+            },
+          ])
+          .flat();
+        decorationsCollection.set(newDecorations);
+      }, 1500);
     });
+
+    const styleElement = document.createElement("style");
+    styleElement.textContent = `
+    .lint-error {
+        text-decoration: underline;
+        text-decoration-color: red;
+        text-decoration-style: wavy;
+    }
+
+    .lint-warning {
+        text-decoration: underline;
+        text-decoration-color: yellow;
+        text-decoration-style: wavy;
+    } 
+`;
+    document.head.append(styleElement);
+
+    // https://github.com/bitburner-official/bitburner-src/pull/1470/files
+    if (editorContainer.firstElementChild) {
+      (editorContainer.firstElementChild as HTMLElement).style.outline = "none";
+    }
   });
 
   onDestroy(() => {

@@ -64,6 +64,10 @@
   <button
     class="add-remove"
     on:click={() => {
+      if (confirm("Are you sure you want to delete this item?") === false) {
+        return;
+      }
+
       provider.remove();
       list = list;
     }}
@@ -106,8 +110,6 @@
   .icon {
     height: 1.2em;
     margin-right: 0.5em;
-    position: relative;
-    top: 0.2em;
   }
 
   li.selected .icon {
@@ -121,6 +123,11 @@
 
   li {
     padding: 0.1em;
+    transition: background-color 0.1s;
+  }
+
+  li:hover {
+    background-color: var(--bg-sec);
   }
 
   li.selected {
@@ -135,10 +142,9 @@
     background-color: transparent;
     border: none;
     cursor: pointer;
-  }
-
-  li button:hover {
-    text-decoration: underline;
+    width: 100%;
+    display: flex;
+    align-items: center;
   }
 
   .add-remove-container {

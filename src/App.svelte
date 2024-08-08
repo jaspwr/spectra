@@ -36,6 +36,7 @@
   import NavBar from "./components/NavBar/NavBar.svelte";
   import type { NavBarSection } from "./components/NavBar/navbar";
   import { writable } from "svelte/store";
+  import SceneManager from "./components/SceneManager.svelte";
 
   const isEmbedded = URL_PARAMETERS.isEmbedded;
   let presentationMode = false;
@@ -95,6 +96,7 @@
     DevelopmentStateInfo,
     EditingMacro,
     CreatingEmbed,
+    ManagingScenes,
   }
 
   let appState = URL_PARAMETERS.isEmbedded
@@ -130,7 +132,7 @@
       items: [
         {
           title: "Manage Scenes",
-          action: () => console.log("Save"),
+          action: () => (appState = AppState.ManagingScenes),
         },
         {
           title: "Create Embed",
@@ -295,6 +297,14 @@
   >
     This application is still in development. Some features may not work as
     expected and breaking changed may be introduced.
+  </Popout>
+{:else if appState === AppState.ManagingScenes}
+  <Popout
+    onClose={() => {
+      appState = AppState.Normal;
+    }}
+  >
+    <SceneManager />
   </Popout>
 {:else if appState === AppState.CreatingEmbed && scene !== undefined}
   <Popout

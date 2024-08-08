@@ -20,7 +20,7 @@
   import { PipeLine } from "../pipeline";
   import type { Scene } from "../scene";
   import { WINDOW_ASPECT, WINDOW_HEIGHT, WINDOW_WIDTH } from "@/gl/utils";
-  import { FPS, PLAYING } from "../utils";
+  import { FPS, GL_CONTEXT, PLAYING } from "../utils";
 
   export let scene: Scene | null;
 
@@ -106,6 +106,10 @@
     resize();
 
     requestAnimationFrame(loop);
+
+    if (GL_CONTEXT.gl === null) {
+      GL_CONTEXT.gl = gl;
+    }
   });
 </script>
 
