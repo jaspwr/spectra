@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Scene } from "@/scene";
+  import { selectedScene, type Scene } from "@/scene";
   import CloseButton from "./CloseButton.svelte";
   import {
     type Presentation,
@@ -14,6 +14,7 @@
   import Markdown from "svelte-markdown";
   import KatexRenderer from "./KatexRenderer.svelte";
   import { onDestroy, onMount } from "svelte";
+  import { scenes } from "@/scene";
 
   marked.use(katex({ throwOnError: true }));
   const options = marked.defaults;
@@ -31,11 +32,33 @@
 
   $: console.log(JSON.stringify(presentation));
 
+  const onSlideChange = () => {
+    slide = presentation.slides[slideIndex];
+    selectedScene.set(slide.project);
+    const scene = $scenes.find((s) => s.name === slide.project);
+    if (scene === undefined) return;
+
+    const sourceFile: string | null = null;
+
+    for (const col of slide.columns) {
+      if (col.type === ColumnType.CodeEditor && col.filename !== undefined) {
+        scene.selectedShaderFile.set(col.filename);
+        break;
+      }
+    }
+
+    if (sourceFile === null) return;
+
+    scene.selectedShaderFile.set(sourceFile);
+  };
+
   const nextSlide = () => {
     slideIndex = Math.min(presentation.slides.length - 1, slideIndex + 1);
+    onSlideChange();
   };
   const prevSlide = () => {
     slideIndex = Math.max(0, slideIndex - 1);
+    onSlideChange();
   };
 
   const keyHandler = (e: KeyboardEvent) => {
