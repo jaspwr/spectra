@@ -1,12 +1,10 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+  import { onMount } from "svelte";
   import ListButton from "./ListButton.svelte";
   import type { NavBarItem } from "./navbar";
 
   export let items: NavBarItem[];
   export let close: () => void;
-
-  console.log(items);
 
   const escape = (e: KeyboardEvent) => {
     if (e.key === "Escape") close();

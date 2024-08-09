@@ -4,7 +4,6 @@
 * +/- icons
 * resizble sections
 * Shortcuts
-* Linter
 * Bug with renamable node labels
 * Context menus
     * For file trees

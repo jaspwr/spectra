@@ -37,12 +37,10 @@
   import type { NavBarSection } from "./components/NavBar/navbar";
   import { writable } from "svelte/store";
   import SceneManager from "./components/SceneManager.svelte";
+  import { loadProject } from "./project";
 
   const isEmbedded = URL_PARAMETERS.isEmbedded;
   let presentationMode = false;
-
-  let _selected = $selectedScene;
-  $: selectedScene.set(_selected);
 
   let editorVimMode = writable(false);
 
@@ -66,9 +64,9 @@
   };
 
   let preSceneName = "";
-  $: if (preSceneName !== _selected) {
-    document.title = _selected;
-    preSceneName = _selected;
+  $: if (preSceneName !== $selectedScene) {
+    document.title = $selectedScene;
+    preSceneName = $selectedScene;
     recompile();
     forceRerender();
   }
@@ -79,9 +77,7 @@
     if (scene === undefined) return;
     const serialized = serialize(scene);
     localStorage.setItem(scene.name, serialized);
-    console.log(serialized);
     const url = toUrl(scene);
-    console.log(url);
     console.log(
       "url length",
       url.length,
@@ -105,25 +101,25 @@
 
   let started = false;
 
+  $: if ($selectedScene !== undefined && $scenes.length > 0) {
+    selectedScene.set($scenes[0].name);
+  }
+
   const navbar: NavBarSection[] = [
     {
       title: "File",
       items: [
         {
-          title: "New",
-          action: () => console.log("New"),
+          title: "Import",
+          action: () => {
+            const url = prompt("Enter the URL of the scene to import");
+            if (url === null) return;
+            loadProject(url);
+          },
         },
         {
-          title: "Save",
+          title: "Export",
           action: () => console.log("Save"),
-        },
-        {
-          title: "Save As",
-          action: () => console.log("Save As"),
-        },
-        {
-          title: "Open",
-          action: () => console.log("Open"),
         },
       ],
     },
@@ -239,7 +235,7 @@
       </div>
       <div class="top-bar-item">
         Scene:
-        <select bind:value={_selected}>
+        <select bind:value={$selectedScene}>
           {#each $scenes as scene}
             <option>{scene.name}</option>
           {/each}

@@ -31,4 +31,20 @@
   });
 </script>
 
-<input type="text" class="rename" bind:this={inputElem} bind:value={renameBuffer} />
+<input
+  type="text"
+  class="rename"
+  bind:this={inputElem}
+  bind:value={renameBuffer}
+/>
+
+<style>
+  .rename {
+    width: 100%;
+    outline: none;
+    border: none;
+    color: inherit;
+    font-size: inherit;
+    background-color: transparent;
+  }
+</style>

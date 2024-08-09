@@ -33,6 +33,7 @@
   $: scene = $scenes.find((p) => p.name === $selectedScene);
   $: selectedFile = scene?.selectedShaderFile;
   $: file = scene?.shaderFiles.find((s) => s.filename === $selectedFile);
+  $: console.log(selectedFile);
 
   $: showEditor = $selectedFile !== undefined && file;
 

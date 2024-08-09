@@ -5,6 +5,7 @@
     type Presentation,
     DEFAULT_PRESENTATION,
     ColumnType,
+    PRESENTATION,
   } from "@/presentation";
   import GlWindow from "./GlWindow.svelte";
   import CodeEditor from "./CodeEditor.svelte";
@@ -12,6 +13,7 @@
   import katex from "marked-katex-extension";
   import Markdown from "svelte-markdown";
   import KatexRenderer from "./KatexRenderer.svelte";
+  import { onMount } from "svelte";
 
   marked.use(katex({ throwOnError: true }));
   const options = marked.defaults;
@@ -21,11 +23,33 @@
   export let scene: Scene;
   export let recompile: () => void;
 
-  let presentation: Presentation = scene.presentation ?? DEFAULT_PRESENTATION;
+  $: presentation = $PRESENTATION;
 
   let slideIndex = 0;
 
   $: slide = presentation.slides[slideIndex];
+
+  $: console.log(JSON.stringify(presentation));
+
+  const nextSlide = () => {
+    slideIndex = Math.min(presentation.slides.length - 1, slideIndex + 1);
+  };
+  const prevSlide = () => {
+    slideIndex = Math.max(0, slideIndex - 1);
+  };
+
+  const keyHandler = (e: KeyboardEvent) => {
+    if (e.key === "ArrowRight" || e.key === " ") {
+      nextSlide();
+    } else if (e.key === "ArrowLeft") {
+      prevSlide();
+    }
+  };
+
+  onMount(() => {
+    window.addEventListener("keydown", keyHandler);
+    return () => window.removeEventListener("keydown", keyHandler);
+  });
 </script>
 
 <CloseButton {onClose} />
@@ -49,11 +73,9 @@
 </div>
 
 <div class="slide-controls">
-  <button on:click={() => (slideIndex = Math.max(0, slideIndex - 1))}>&lt;</button>
+  <button on:click={prevSlide}>&lt;</button>
   <span>{slideIndex + 1}/{presentation.slides.length}</span>
-  <button on:click={() => (slideIndex = Math.min(presentation.slides.length - 1, slideIndex + 1))}>
-    &gt;
-  </button>
+  <button on:click={nextSlide}> &gt; </button>
 </div>
 
 <style>
