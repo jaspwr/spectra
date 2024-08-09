@@ -11,12 +11,12 @@
   onMount(() => {
     setTimeout(() => {
       if (!containerElem) return;
-      containerElem.style.top = "0";
+      containerElem.style.right = "0";
       containerElem.style.opacity = "1";
     }, 100);
     setTimeout(() => {
       if (!containerElem) return;
-      containerElem.style.top = "-100px";
+      containerElem.style.right = "-100px";
       containerElem.style.opacity = "0";
     }, notification.duration - TRANSITION_TIME);
   });
@@ -29,7 +29,7 @@
 <style>
   .container {
     position: relative;
-    top: -100px;
+    right: -100px;
     opacity: 0;
     padding: 1rem;
     background-color: var(--bg-sec);
