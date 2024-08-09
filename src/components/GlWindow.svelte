@@ -16,7 +16,7 @@
 -->
 
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { PipeLine } from "../pipeline";
   import type { Scene } from "../scene";
   import { WINDOW_ASPECT, WINDOW_HEIGHT, WINDOW_WIDTH } from "@/gl/utils";
@@ -51,7 +51,11 @@
   let frameSumSamples = 0;
   let FPS_INTEGRATION_TIME = 30; // frames
 
+  const destroyed = { value: false };
+
   function loop(currentTime: DOMHighResTimeStamp) {
+    if (destroyed.value) return;
+
     if (($PLAYING || pausedNeedsUpdate) && pipeline !== null && gl !== null) {
       pausedNeedsUpdate = false;
 
@@ -109,6 +113,11 @@
     if (GL_CONTEXT.gl === null) {
       GL_CONTEXT.gl = gl;
     }
+  });
+
+  onDestroy(() => {
+    gl = null;
+    destroyed.value = true;
   });
 </script>
 

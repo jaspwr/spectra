@@ -13,7 +13,7 @@
   import katex from "marked-katex-extension";
   import Markdown from "svelte-markdown";
   import KatexRenderer from "./KatexRenderer.svelte";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
 
   marked.use(katex({ throwOnError: true }));
   const options = marked.defaults;
