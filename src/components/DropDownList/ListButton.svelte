@@ -33,6 +33,7 @@
     width: 100%;
     height: 30px;
     transition: background-color 0.2s;
+    cursor: pointer;
   }
 
   .item:hover {
