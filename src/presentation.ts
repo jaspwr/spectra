@@ -18,7 +18,7 @@ export enum ColumnType {
 
 export interface Column {
   type: ColumnType;
-  markdownContent?: string;
+  markdownContent?: string | string[];
   filename?: string;
 }
 

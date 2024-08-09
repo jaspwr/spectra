@@ -50,6 +50,18 @@
     window.addEventListener("keydown", keyHandler);
     return () => window.removeEventListener("keydown", keyHandler);
   });
+
+  const handleConent = (content: string | string[] | undefined): string => {
+    if (content === undefined) {
+      return "";
+    }
+
+    if (Array.isArray(content)) {
+      return content.join("\n");
+    }
+
+    return content;
+  };
 </script>
 
 <CloseButton {onClose} />
@@ -61,7 +73,11 @@
   {#each slide.columns as column}
     <div class="column">
       {#if column.type === ColumnType.Markdown}
-        <Markdown source={column.markdownContent} {renderers} {options} />
+        <Markdown
+          source={handleConent(column.markdownContent)}
+          {renderers}
+          {options}
+        />
       {:else if column.type === ColumnType.GlWindow}
         <GlWindow {scene} />
         <button on:click={recompile} class="recompile">Recompile</button>
