@@ -110,23 +110,23 @@
     recompile();
   });
 
+  const openProject = () => {
+    const url = prompt("Enter the URL of the scene to import");
+    if (url === null) return;
+    loadProject(url);
+  };
+
   const navbar: NavBarSection[] = [
     {
       title: "File",
       items: [
         {
           title: "Import",
-          action: () => {
-            const url = prompt("Enter the URL of the scene to import");
-            if (url === null) return;
-            loadProject(url);
-          },
+          action: openProject,
         },
         {
           title: "Export",
-          action: () => {
-            exportProject();
-          },
+          action: exportProject,
         },
       ],
     },
@@ -177,6 +177,27 @@
       ],
     },
   ];
+
+  const shortcutHandler = (e: KeyboardEvent) => {
+    if (e.key === "s" && e.ctrlKey) {
+      e.preventDefault();
+      exportProject();
+    } else if (e.key === "o" && e.ctrlKey) {
+      e.preventDefault();
+      openProject();
+    } else if (e.key === "F5") {
+      e.preventDefault();
+      presentationMode = true;
+    } else if (e.key === "r" && e.ctrlKey) { 
+      e.preventDefault();
+      recompile();
+    }
+  };
+
+  if (!URL_PARAMETERS.isEmbedded) {
+    // Add shortcuts
+    document.addEventListener("keydown", shortcutHandler);
+  }
 </script>
 
 {#if isEmbedded}
