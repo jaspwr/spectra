@@ -184,6 +184,7 @@ export class SceneProvider extends FileTreeProvider<Scene> {
           edges: writable([]),
         },
         macros: [],
+        selectedShaderFile: writable(""),
       });
       return p;
     });

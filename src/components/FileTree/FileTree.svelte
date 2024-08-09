@@ -17,7 +17,7 @@
 
 <script lang="ts">
   import { scenes, selectedScene, type Scene } from "@/scene";
-  import FileTreeRenameBox from "./RenameBox.svelte";
+  import RenameBox from "./RenameBox.svelte";
   import type { FileTreeProvider } from "@/filetree";
 
   // $: list =
@@ -85,7 +85,7 @@
         }}
       >
         {#if renaming === provider.itemName(shader)}
-          <FileTreeRenameBox
+          <RenameBox
             initialValue={provider.itemName(shader)}
             unselect={() => (renaming = null)}
             setValue={(v) => {

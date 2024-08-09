@@ -37,23 +37,32 @@
   import type { NavBarSection } from "./components/NavBar/navbar";
   import { writable } from "svelte/store";
   import SceneManager from "./components/SceneManager.svelte";
+  import { exportProject, loadProject } from "./project";
+  import NotificationsList from "./components/Notification/NotificationsList.svelte";
+  import { notify } from "./components/Notification/notifications";
+  import { onMount } from "svelte";
 
   const isEmbedded = URL_PARAMETERS.isEmbedded;
   let presentationMode = false;
 
-  let _selected = $selectedScene;
-  $: selectedScene.set(_selected);
-
-  let editorVimMode = writable(false);
+  let editorVimMode = writable(
+    localStorage.getItem("editorVimMode") === "true",
+  );
+  let firstVimModeUpdate = true;
+  editorVimMode.subscribe((value) => {
+    if (firstVimModeUpdate) {
+      firstVimModeUpdate = false;
+      return;
+    }
+    localStorage.setItem("editorVimMode", value.toString());
+    notify(`Vim mode ${value ? "enabled" : "disabled"}`);
+  });
 
   $: scene = $scenes.find((p) => p.name === $selectedScene);
-  let displayingScene: Scene | null = null;
 
   const recompile = () => {
-    GL_ERRORS.set([]);
     scenes.update((p) => p);
-    if (scene === undefined) return;
-    displayingScene = scene;
+    GL_ERRORS.set([]);
   };
 
   let forcingRerender = false;
@@ -65,31 +74,7 @@
     }, 10);
   };
 
-  let preSceneName = "";
-  $: if (preSceneName !== _selected) {
-    document.title = _selected;
-    preSceneName = _selected;
-    recompile();
-    forceRerender();
-  }
-
   recompile();
-
-  const save = () => {
-    if (scene === undefined) return;
-    const serialized = serialize(scene);
-    localStorage.setItem(scene.name, serialized);
-    console.log(serialized);
-    const url = toUrl(scene);
-    console.log(url);
-    console.log(
-      "url length",
-      url.length,
-      "uncompressed lenght",
-      serialized.length,
-    );
-    console.log("compression ratio", url.length / serialized.length);
-  };
 
   enum AppState {
     Normal,
@@ -105,25 +90,43 @@
 
   let started = false;
 
+  const isValidScene = (name: string) => {
+    return $scenes.find((s) => s.name === name) !== undefined;
+  };
+
+  $: if (!isValidScene($selectedScene) && $scenes.length > 0) {
+    selectedScene.set($scenes[0].name);
+  }
+
+  let preSceneName = "";
+  $: if (preSceneName !== $selectedScene && scene !== undefined) {
+    document.title = $selectedScene;
+    preSceneName = $selectedScene;
+    recompile();
+    forceRerender();
+  }
+
+  onMount(() => {
+    recompile();
+  });
+
   const navbar: NavBarSection[] = [
     {
       title: "File",
       items: [
         {
-          title: "New",
-          action: () => console.log("New"),
+          title: "Import",
+          action: () => {
+            const url = prompt("Enter the URL of the scene to import");
+            if (url === null) return;
+            loadProject(url);
+          },
         },
         {
-          title: "Save",
-          action: () => console.log("Save"),
-        },
-        {
-          title: "Save As",
-          action: () => console.log("Save As"),
-        },
-        {
-          title: "Open",
-          action: () => console.log("Open"),
+          title: "Export",
+          action: () => {
+            exportProject();
+          },
         },
       ],
     },
@@ -197,7 +200,7 @@
     <div class="embed-gl-window">
       {#if !URL_PARAMETERS.startIdle || started}
         <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
-          <GlWindow scene={displayingScene} />
+          <GlWindow scene={scene ?? null} />
         </div>
         {#if $GL_ERRORS.length > 0}
           <ErrorList errors={$GL_ERRORS} />
@@ -221,6 +224,8 @@
     onClose={() => (presentationMode = false)}
   />
 {:else}
+  <NotificationsList />
+  <!-- Main layout -->
   <div class="layout">
     <div class="top-bar">
       <div class="top-bar-item" style="padding-left: 1rem">
@@ -239,7 +244,7 @@
       </div>
       <div class="top-bar-item">
         Scene:
-        <select bind:value={_selected}>
+        <select bind:value={$selectedScene}>
           {#each $scenes as scene}
             <option>{scene.name}</option>
           {/each}
@@ -249,7 +254,7 @@
     </div>
     <div class="gl-window">
       <div class:hide={$GL_ERRORS.length > 0} class="gl-container">
-        <GlWindow scene={displayingScene} />
+        <GlWindow scene={scene ?? null} />
       </div>
       {#if $GL_ERRORS.length > 0}
         <ErrorList errors={$GL_ERRORS} />
@@ -268,7 +273,6 @@
         </SvelteFlowProvider>
       {/if}
     </div>
-
     <div class="sidebar">
       <div class="file-tree">
         <FileTree provider={new ShaderFilesProvider()} />

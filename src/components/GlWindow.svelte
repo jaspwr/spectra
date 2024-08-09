@@ -21,10 +21,13 @@
   import type { Scene } from "../scene";
   import { WINDOW_ASPECT, WINDOW_HEIGHT, WINDOW_WIDTH } from "@/gl/utils";
   import { FPS, GL_CONTEXT, PLAYING } from "../utils";
+  import { notify } from "./Notification/notifications";
 
   export let scene: Scene | null;
 
   let pipeline: PipeLine | null = null;
+
+  $: console.log(pipeline);
 
   // When the scene is recompiled or the window size changes,
   // the window is rererended even if paused.
@@ -32,6 +35,7 @@
 
   $: {
     if (scene !== null && gl !== null) {
+      notify("Recompiling...");
       pipeline = new PipeLine(scene, gl);
     }
     pausedNeedsUpdate = true;
@@ -97,11 +101,6 @@
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
-
-    // const ext = gl.getExtension("WEBGL_depth_texture");
-    // if (!ext) {
-    //   return alert("WEBGL_depth_texture not supported. Try another browser.");
-    // }
 
     resize();
 
