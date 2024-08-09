@@ -85,7 +85,7 @@ export interface PipelineGraph {
   edges: Writable<SvelteFlowEdge[]>;
 }
 
-export function serialize(scene: Scene): string {
+export function serialize(scene: Scene): SerializedScene {
   const serialized: SerializedScene = {
     name: scene.name,
     goals: [...scene.goals],
@@ -94,7 +94,7 @@ export function serialize(scene: Scene): string {
     macros: scene.macros.map(m => serializeMacro(m)),
   };
 
-  return JSON.stringify(serialized);
+  return serialized;
 }
 
 export function deserialize(json: string): Scene {
@@ -213,7 +213,7 @@ function base64ToUint8Array(base64String: string): Uint8Array {
 
 export function toUrl(scene: Scene): string {
   const data = serialize(scene);
-  const compressesed = pako.deflate(data);
+  const compressesed = pako.deflate(JSON.stringify(data));
   const b64 = uint8ArrayToBase64(compressesed);
   const url = encodeURIComponent(b64);
   return url;

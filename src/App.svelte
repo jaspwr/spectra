@@ -37,10 +37,10 @@
   import type { NavBarSection } from "./components/NavBar/navbar";
   import { writable } from "svelte/store";
   import SceneManager from "./components/SceneManager.svelte";
-  import { loadProject } from "./project";
+  import { exportProject, loadProject } from "./project";
   import NotificationsList from "./components/Notification/NotificationsList.svelte";
   import { notify } from "./components/Notification/notifications";
-    import { onMount } from "svelte";
+  import { onMount } from "svelte";
 
   const isEmbedded = URL_PARAMETERS.isEmbedded;
   let presentationMode = false;
@@ -124,7 +124,9 @@
         },
         {
           title: "Export",
-          action: () => console.log("Save"),
+          action: () => {
+            exportProject();
+          },
         },
       ],
     },

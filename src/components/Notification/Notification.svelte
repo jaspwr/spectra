@@ -35,6 +35,6 @@
     background-color: var(--bg-sec);
     color: var(--text-sec);
     box-shadow: var(--shadow);
-    transition: all 0.3s;
+    transition: all 0.3s ease-in-out;
   }
 </style>

@@ -2,7 +2,9 @@ import { get } from "svelte/store";
 import { notify } from "./components/Notification/notifications";
 import { Shader } from "./gl/shader";
 import { PRESENTATION, type Presentation } from "./presentation";
-import { deserialize, scenes, selectedScene, type Scene } from "./scene";
+import { deserialize, scenes, selectedScene, serialize, type Scene } from "./scene";
+import JSZip from "jszip";
+import { saveAs } from 'file-saver';
 
 export async function loadProject(metaUrl: string) {
   try {
@@ -39,4 +41,38 @@ async function loadShader(location: string, filename: string): Promise<string> {
 interface ProjectMeta {
   scenes: string[];
   presentation: Presentation;
+}
+
+export function exportProject() {
+  try {
+    const zip = new JSZip();
+
+    const sceneNames: string[] = [];
+    for (const scene of get(scenes)) {
+      const serializedScene = serialize(scene);
+      const folder = zip.folder(scene.name);
+
+      if (folder === null) throw new Error("Failed to create folder in zip");
+
+      for (const shader of serializedScene.shaders) {
+        folder.file(shader.filename, shader.contents);
+      }
+
+      folder.file("scene.json", JSON.stringify(serializedScene));
+    }
+    const presentation = get(PRESENTATION);
+
+    const projectMeta: ProjectMeta = {
+      scenes: sceneNames,
+      presentation
+    };
+
+    zip.file("project.json", JSON.stringify(projectMeta));
+
+    zip.generateAsync({ type: "blob" }).then(function(content) {
+      saveAs(content, "project.zip");
+    });
+  } catch (e) {
+    notify(`Failed to export project: ${e}`);
+  }
 }
