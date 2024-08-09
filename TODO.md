@@ -9,5 +9,4 @@
     * For file trees
     * For Nodes
 * Proper docs
-* Cookie for vim mode
 * Themes

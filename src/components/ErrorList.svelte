@@ -16,7 +16,11 @@
 -->
 
 <script lang="ts">
+  import { notify } from "./Notification/notifications";
+
   export let errors: string[] = [];
+
+  notify("Compilation Failed.");
 </script>
 
 <div class="error-list">

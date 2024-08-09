@@ -28,7 +28,7 @@ import type { Presentation } from "./presentation";
 
 
 // The filename of the selected scene
-export const selectedScene = writable<string>("Simple Frag");
+export const selectedScene = writable<string>("");
 
 const _scenes: Scene[] = [];
 
@@ -69,7 +69,7 @@ export interface Scene {
   name: string;
   goals: Goal[];
   shaderFiles: Shader[];
-  selectedShaderFile?: Writable<string>;
+  selectedShaderFile: Writable<string>;
   pipelineGraph: PipelineGraph;
   macros: Macro[];
   presentation?: Presentation;
@@ -106,6 +106,7 @@ export function deserialize(json: string): Scene {
     shaderFiles: serialized.shaders.map((s) => deserializeShader(s)),
     pipelineGraph: deserializePipelineGraph(serialized.pipelineGraph),
     macros: (serialized.macros ?? []).map(m => deserializeMacro(m)),
+    selectedShaderFile: writable(serialized.shaders[0]?.filename ?? ""),
   };
 }
 

@@ -1,13 +1,20 @@
+import { get } from "svelte/store";
+import { notify } from "./components/Notification/notifications";
 import { Shader } from "./gl/shader";
 import { PRESENTATION, type Presentation } from "./presentation";
-import { deserialize, scenes, type Scene } from "./scene";
+import { deserialize, scenes, selectedScene, type Scene } from "./scene";
 
 export async function loadProject(metaUrl: string) {
-  const projectMeta = await (await fetch(metaUrl)).json() as ProjectMeta;
-  const location = metaUrl.split("/").slice(0, -1).join("/");
+  try {
+    const projectMeta = await (await fetch(metaUrl)).json() as ProjectMeta;
+    const location = metaUrl.split("/").slice(0, -1).join("/");
 
-  scenes.set(await Promise.all(projectMeta.scenes.map(s => loadScene(location, s))));
-  PRESENTATION.set(projectMeta.presentation);
+    scenes.set(await Promise.all(projectMeta.scenes.map(s => loadScene(location, s))));
+    PRESENTATION.set(projectMeta.presentation);
+    selectedScene.set(get(scenes)[0]?.name ?? "");
+  } catch (e) {
+    notify(`Failed to load project: ${e}`);
+  }
 }
 
 async function loadScene(location: string, sceneName: string): Promise<Scene> {

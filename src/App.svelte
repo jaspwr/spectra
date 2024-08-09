@@ -38,16 +38,31 @@
   import { writable } from "svelte/store";
   import SceneManager from "./components/SceneManager.svelte";
   import { loadProject } from "./project";
+  import NotificationsList from "./components/Notification/NotificationsList.svelte";
+  import { notify } from "./components/Notification/notifications";
 
   const isEmbedded = URL_PARAMETERS.isEmbedded;
   let presentationMode = false;
 
-  let editorVimMode = writable(false);
+  let editorVimMode = writable(
+    localStorage.getItem("editorVimMode") === "true",
+  );
+  let firstVimModeUpdate = true;
+  editorVimMode.subscribe((value) => {
+    if (firstVimModeUpdate) {
+      firstVimModeUpdate = false;
+      return;
+    }
+    localStorage.setItem("editorVimMode", value.toString());
+    notify(`Vim mode ${value ? "enabled" : "disabled"}`);
+  });
 
   $: scene = $scenes.find((p) => p.name === $selectedScene);
   let displayingScene: Scene | null = null;
 
   const recompile = () => {
+    notify("Recompiling...");
+
     GL_ERRORS.set([]);
     scenes.update((p) => p);
     if (scene === undefined) return;
@@ -101,7 +116,11 @@
 
   let started = false;
 
-  $: if ($selectedScene !== undefined && $scenes.length > 0) {
+  const isValidScene = (name: string) => {
+    return $scenes.find((s) => s.name === name) !== undefined;
+  };
+
+  $: if (!isValidScene($selectedScene) && $scenes.length > 0) {
     selectedScene.set($scenes[0].name);
   }
 
@@ -311,6 +330,8 @@
     <EmbedCreator {scene} />
   </Popout>
 {/if}
+
+<NotificationsList />
 
 <style>
   .embed-layout {
