@@ -16,23 +16,13 @@
 -->
 
 <script lang="ts">
-  import { scenes, selectedScene, type Scene } from "@/scene";
-  import RenameBox from "./RenameBox.svelte";
   import type { FileTreeProvider } from "@/filetree";
-
-  // $: list =
-  // $scenes.find((p) => p.name === $selectedScene)?.shaderFiles || [];
-
-  // $: selected = $scenes.find(
-  //   (p) => p.name === $selectedScene,
-  // )?.selectedShaderFile;
+  import ListItem from "./ListItem.svelte";
 
   type Item = $$Generic;
 
   $: list = provider.list;
   $: selected = provider.selected;
-
-  let renaming: string | null = null;
 
   export let provider: FileTreeProvider<Item>;
 
@@ -48,6 +38,10 @@
 
   const onSelect = (item: Item) => {
     provider.selected.set(provider.itemName(item));
+  };
+
+  const rerenderList = () => {
+    list = list;
   };
 </script>
 
@@ -77,74 +71,14 @@
 </div>
 <ul>
   {#each sortedList as shader}
-    <li class:selected={provider.itemName(shader) === $selected}>
-      <button
-        on:click={() => onSelect(shader)}
-        on:dblclick={() => {
-          renaming = provider.itemName(shader);
-        }}
-      >
-        {#if renaming === provider.itemName(shader)}
-          <RenameBox
-            initialValue={provider.itemName(shader)}
-            unselect={() => (renaming = null)}
-            setValue={(v) => {
-              provider.rename(shader, v);
-              list = list;
-            }}
-          />
-        {:else}
-          {#if provider.iconPath(shader) !== null}
-            <img class="icon" src={provider.iconPath(shader)} alt="file" />
-          {:else}
-            <img class="icon" src="icons/file.svg" alt="file" />
-          {/if}
-          {provider.itemName(shader)}
-        {/if}
-      </button>
-    </li>
+    <ListItem {shader} {provider} {onSelect} {rerenderList} {selected} />
   {/each}
 </ul>
 
 <style>
-  .icon {
-    height: 1.2em;
-    margin-right: 0.5em;
-  }
-
-  li.selected .icon {
-    filter: invert(1);
-  }
-
   ul {
     list-style-type: none;
     padding: 0;
-  }
-
-  li {
-    padding: 0.1em;
-    transition: background-color 0.1s;
-  }
-
-  li:hover {
-    background-color: var(--bg-sec);
-  }
-
-  li.selected {
-    background-color: var(--text-sec);
-  }
-
-  li.selected button {
-    color: var(--bg-prim);
-  }
-
-  li button {
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-    display: flex;
-    align-items: center;
   }
 
   .add-remove-container {

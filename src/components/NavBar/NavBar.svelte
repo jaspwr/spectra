@@ -2,7 +2,7 @@
   import { FPS } from "@/utils";
   import PlayPauseButton from "@/components/PlayPauseButton.svelte";
   import BarButton from "./BarButton.svelte";
-  import type { NavBarItem, NavBarSection } from "./navbar";
+  import type { NavBarSection } from "./navbar";
   import { writable } from "svelte/store";
 
   export let navbar: NavBarSection[] = [];

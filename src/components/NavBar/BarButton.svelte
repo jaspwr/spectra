@@ -1,5 +1,5 @@
 <script lang="ts">
-  import DropDownList from "./DropDownList.svelte";
+    import DropDownList from "../DropDownList/DropDownList.svelte";
   import type { NavBarSection } from "./navbar";
 
   export let section: NavBarSection;

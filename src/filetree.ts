@@ -1,7 +1,8 @@
 import { get, writable, type Writable } from "svelte/store";
 import { Shader, ShaderType } from "./gl/shader";
-import { scenes, selectedScene, type Scene } from "@/scene";
+import { deserialize, scenes, selectedScene, serialize, type Scene } from "@/scene";
 import { MACRO_EDITOR_SELECTED_MACRO, newMacro, type Macro } from "./macro";
+import { notify } from "./components/Notification/notifications";
 
 export abstract class FileTreeProvider<Item> {
   selected: Writable<string> = writable("");
@@ -12,6 +13,7 @@ export abstract class FileTreeProvider<Item> {
   abstract add(): void;
   abstract remove(): void;
   abstract rename(item: Item, name: string): void;
+  abstract duplicate(item: Item): void;
 }
 
 export class ShaderFilesProvider extends FileTreeProvider<Shader> {
@@ -94,6 +96,16 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
     item.updateFilename(name);
     scenes.update((p) => p);
   };
+
+  duplicate(item: Shader) {
+    scenes.update((p) => {
+      let scene = p.find((p) => p.name === get(selectedScene));
+      if (scene) {
+        scene.shaderFiles.push(new Shader(item.filename, item.contents));
+      }
+      return p;
+    });
+  };
 }
 
 export class MacroProvider extends FileTreeProvider<Macro> {
@@ -156,6 +168,10 @@ export class MacroProvider extends FileTreeProvider<Macro> {
   rename(item: Macro, name: string) {
     item.name = name;
   }
+
+  duplicate(item: Macro) {
+    notify("Unimplemented");
+  }
 }
 
 export class SceneProvider extends FileTreeProvider<Scene> {
@@ -205,5 +221,14 @@ export class SceneProvider extends FileTreeProvider<Scene> {
   rename(item: Scene, name: string) {
     item.name = name;
     scenes.update((p) => p);
+  }
+
+  duplicate(item: Scene) {
+    const cpy = deserialize(JSON.stringify(serialize(item)));
+    cpy.name = `${item.name} (copy)`;
+    scenes.update((p) => {
+      p.push(cpy);
+      return p;
+    });
   }
 }

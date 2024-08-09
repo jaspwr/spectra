@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import ListButton from "./ListButton.svelte";
-  import type { NavBarItem } from "./navbar";
+  import type { DropDownListItem } from "./dropdownlist";
 
-  export let items: NavBarItem[];
+  export let items: DropDownListItem[];
   export let close: () => void;
 
   const escape = (e: KeyboardEvent) => {
