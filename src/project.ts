@@ -48,9 +48,12 @@ export function exportProject() {
     const zip = new JSZip();
 
     const sceneNames: string[] = [];
+    const scenesFolder = zip.folder("scenes");
+
+    if (scenesFolder === null) throw new Error("Failed to create folder in zip");
     for (const scene of get(scenes)) {
       const serializedScene = serialize(scene);
-      const folder = zip.folder(scene.name);
+      const folder = scenesFolder.folder(scene.name);
 
       if (folder === null) throw new Error("Failed to create folder in zip");
 
