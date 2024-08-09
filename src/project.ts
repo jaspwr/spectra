@@ -62,6 +62,7 @@ export function exportProject() {
       }
 
       folder.file("scene.json", JSON.stringify(serializedScene));
+      sceneNames.push(scene.name);
     }
     const presentation = get(PRESENTATION);
 
