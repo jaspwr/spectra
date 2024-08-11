@@ -26,7 +26,6 @@ import type { Macro } from "@/macro";
 import { URL_PARAMETERS } from "./url";
 import type { Presentation } from "./presentation";
 
-
 // The filename of the selected scene
 export const selectedScene = writable<string>("");
 
@@ -38,15 +37,16 @@ if (URL_PARAMETERS.scene !== undefined) {
   selectedScene.set(scene.name);
   if (URL_PARAMETERS.defaultSourceFile !== undefined) {
     console.log(URL_PARAMETERS.defaultSourceFile);
-    if (scene.selectedShaderFile === undefined) scene.selectedShaderFile = writable(URL_PARAMETERS.defaultSourceFile);
+    if (scene.selectedShaderFile === undefined)
+      scene.selectedShaderFile = writable(URL_PARAMETERS.defaultSourceFile);
     scene.selectedShaderFile?.set(URL_PARAMETERS.defaultSourceFile);
   }
 }
 
 _scenes.push(
   deserialize(
-    `{"name":"Intro","goals":[],"shaders":[{"filename":"main.frag","contents":"#version 100\\n\\n#ifdef GL_ES\\nprecision highp float;\\n#endif\\n\\nuniform float time;\\n\\nvarying vec2 uvCoords;\\n\\nvoid main(void) {\\n    gl_FragColor = vec4(uvCoords.x + sin(time), cos(uvCoords.y + time), 1., 1.) / 2.0;\\n}\\n"},{"filename":"main.vert","contents":"#version 100\\n\\nattribute vec4 position;\\n\\nvarying vec2 uvCoords;\\n\\nvoid main(void) {\\n    uvCoords = (position.xy + 1.0)/2.0;\\n    gl_Position = position;\\n}\\n"}],"pipelineGraph":{"nodes":[{"id":"0.46183791393277907","type":"gl-program","position":{"x":250,"y":125},"data":{"label":"gl-program node"},"origin":[0.5,0],"measured":{"width":122,"height":80},"selected":false},{"id":"0.9361335759625984","type":"window","position":{"x":393.5,"y":150},"data":{"label":"window node"},"origin":[0.5,0],"measured":{"width":87,"height":40},"selected":false,"dragging":false},{"id":"0.13214298723530327","type":"shader","position":{"x":11,"y":75},"data":{"label":"shader node","shaderSourceFileName":"main.frag"},"origin":[0.5,0],"measured":{"width":222,"height":88},"selected":false,"dragging":false},{"id":"0.5773928601448672","type":"shader","position":{"x":11,"y":-25},"data":{"label":"shader node","shaderSourceFileName":"main.vert"},"origin":[0.5,0],"measured":{"width":222,"height":72},"selected":false,"dragging":false},{"id":"0.6592953329742872","type":"geometry","position":{"x":36.5,"y":200},"data":{"label":"geometry node","type":"Screen Quad","uniformOverrides":[]},"origin":[0.5,0],"measured":{"width":123,"height":113},"selected":false,"dragging":false},{"id":"0.5113171012819773","type":"uniform","position":{"x":-244,"y":100},"data":{"label":"uniform node","type":"time"},"origin":[0.5,0],"measured":{"width":162,"height":59},"selected":false,"dragging":false}],"edges":[{"source":"0.46183791393277907","target":"0.9361335759625984","targetHandle":"in","id":"xy-edge__0.46183791393277907-0.9361335759625984in","selected":false},{"source":"0.13214298723530327","target":"0.46183791393277907","targetHandle":"frag","id":"xy-edge__0.13214298723530327-0.46183791393277907frag","selected":false},{"source":"0.5773928601448672","target":"0.46183791393277907","targetHandle":"vert","id":"xy-edge__0.5773928601448672-0.46183791393277907vert","selected":false},{"source":"0.6592953329742872","sourceHandle":"__output","target":"0.46183791393277907","targetHandle":"geometry","id":"xy-edge__0.6592953329742872__output-0.46183791393277907geometry","selected":false},{"source":"0.5113171012819773","target":"0.13214298723530327","targetHandle":"time","id":"xy-edge__0.5113171012819773-0.13214298723530327time"}]}}`
-  )
+    `{"name":"Intro","goals":[],"shaders":[{"filename":"main.frag","contents":"#version 100\\n\\n#ifdef GL_ES\\nprecision highp float;\\n#endif\\n\\nuniform float time;\\n\\nvarying vec2 uvCoords;\\n\\nvoid main(void) {\\n    gl_FragColor = vec4(uvCoords.x + sin(time), cos(uvCoords.y + time), 1., 1.) / 2.0;\\n}\\n"},{"filename":"main.vert","contents":"#version 100\\n\\nattribute vec4 position;\\n\\nvarying vec2 uvCoords;\\n\\nvoid main(void) {\\n    uvCoords = (position.xy + 1.0)/2.0;\\n    gl_Position = position;\\n}\\n"}],"pipelineGraph":{"nodes":[{"id":"0.46183791393277907","type":"gl-program","position":{"x":250,"y":125},"data":{"label":"gl-program node"},"origin":[0.5,0],"measured":{"width":122,"height":80},"selected":false},{"id":"0.9361335759625984","type":"window","position":{"x":393.5,"y":150},"data":{"label":"window node"},"origin":[0.5,0],"measured":{"width":87,"height":40},"selected":false,"dragging":false},{"id":"0.13214298723530327","type":"shader","position":{"x":11,"y":75},"data":{"label":"shader node","shaderSourceFileName":"main.frag"},"origin":[0.5,0],"measured":{"width":222,"height":88},"selected":false,"dragging":false},{"id":"0.5773928601448672","type":"shader","position":{"x":11,"y":-25},"data":{"label":"shader node","shaderSourceFileName":"main.vert"},"origin":[0.5,0],"measured":{"width":222,"height":72},"selected":false,"dragging":false},{"id":"0.6592953329742872","type":"geometry","position":{"x":36.5,"y":200},"data":{"label":"geometry node","type":"Screen Quad","uniformOverrides":[]},"origin":[0.5,0],"measured":{"width":123,"height":113},"selected":false,"dragging":false},{"id":"0.5113171012819773","type":"uniform","position":{"x":-244,"y":100},"data":{"label":"uniform node","type":"time"},"origin":[0.5,0],"measured":{"width":162,"height":59},"selected":false,"dragging":false}],"edges":[{"source":"0.46183791393277907","target":"0.9361335759625984","targetHandle":"in","id":"xy-edge__0.46183791393277907-0.9361335759625984in","selected":false},{"source":"0.13214298723530327","target":"0.46183791393277907","targetHandle":"frag","id":"xy-edge__0.13214298723530327-0.46183791393277907frag","selected":false},{"source":"0.5773928601448672","target":"0.46183791393277907","targetHandle":"vert","id":"xy-edge__0.5773928601448672-0.46183791393277907vert","selected":false},{"source":"0.6592953329742872","sourceHandle":"__output","target":"0.46183791393277907","targetHandle":"geometry","id":"xy-edge__0.6592953329742872__output-0.46183791393277907geometry","selected":false},{"source":"0.5113171012819773","target":"0.13214298723530327","targetHandle":"time","id":"xy-edge__0.5113171012819773-0.13214298723530327time"}]}}`,
+  ),
 );
 
 // if (!URL_PARAMETERS.isEmbedded) {
@@ -90,7 +90,7 @@ export function serialize(scene: Scene): SerializedScene {
     goals: [...scene.goals],
     shaders: scene.shaderFiles.map((s) => s.serialize()),
     pipelineGraph: serializePipelineGraph(scene.pipelineGraph),
-    macros: scene.macros.map(m => serializeMacro(m)),
+    macros: scene.macros.map((m) => serializeMacro(m)),
   };
 
   return serialized;
@@ -104,7 +104,7 @@ export function deserialize(json: string): Scene {
     goals: serialized.goals,
     shaderFiles: serialized.shaders.map((s) => deserializeShader(s)),
     pipelineGraph: deserializePipelineGraph(serialized.pipelineGraph),
-    macros: (serialized.macros ?? []).map(m => deserializeMacro(m)),
+    macros: (serialized.macros ?? []).map((m) => deserializeMacro(m)),
     selectedShaderFile: writable(serialized.shaders[0]?.filename ?? ""),
   };
 }
@@ -130,8 +130,8 @@ interface SerializedPipelineGraph {
 
 function serializePipelineGraph(graph: PipelineGraph): SerializedPipelineGraph {
   let nodes: SvelteFlowNode[] | undefined, edges: SvelteFlowEdge[] | undefined;
-  nodes = [...get(graph.nodes)].map(n => ({ ...n }));
-  edges = [...get(graph.edges)].map(e => ({ ...e }));
+  nodes = [...get(graph.nodes)].map((n) => ({ ...n }));
+  edges = [...get(graph.edges)].map((e) => ({ ...e }));
 
   if (nodes === undefined || edges === undefined)
     throw new Error("Error in graph data");
@@ -143,7 +143,7 @@ function serializePipelineGraph(graph: PipelineGraph): SerializedPipelineGraph {
 }
 
 function deserializePipelineGraph(
-  serialized: SerializedPipelineGraph
+  serialized: SerializedPipelineGraph,
 ): PipelineGraph {
   let nodes = writable(serialized.nodes);
   let edges = writable(serialized.edges);
@@ -152,9 +152,11 @@ function deserializePipelineGraph(
 }
 
 function serializeMacro(macro: Macro): SerializedMacro {
-  let nodes: SvelteFlowNode[] | undefined, edges: SvelteFlowEdge[] | undefined, inputLabels: string[] | undefined;
-  nodes = [...get(macro.nodes)].map(n => ({ ...n }));
-  edges = [...get(macro.edges)].map(e => ({ ...e }));
+  let nodes: SvelteFlowNode[] | undefined,
+    edges: SvelteFlowEdge[] | undefined,
+    inputLabels: string[] | undefined;
+  nodes = [...get(macro.nodes)].map((n) => ({ ...n }));
+  edges = [...get(macro.edges)].map((e) => ({ ...e }));
   inputLabels = [...get(macro.inputLabels)];
 
   if (nodes === undefined || edges === undefined || inputLabels === undefined)
@@ -172,14 +174,15 @@ function serializeMacro(macro: Macro): SerializedMacro {
 
 function deserializeMacro(serialized: SerializedMacro): Macro {
   let inputLabels = writable(serialized.inputLabels);
-  let nodes = writable(serialized.graph.nodes.map(n => {
-    if (n.type === "inputs") {
-      n.data.inputLabels = inputLabels;
-    }
-    return n;
-  }));
+  let nodes = writable(
+    serialized.graph.nodes.map((n) => {
+      if (n.type === "inputs") {
+        n.data.inputLabels = inputLabels;
+      }
+      return n;
+    }),
+  );
   let edges = writable(serialized.graph.edges);
-
 
   return {
     name: serialized.name,

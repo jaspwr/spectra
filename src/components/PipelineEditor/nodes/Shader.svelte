@@ -20,9 +20,9 @@
   import { writable, type Writable } from "svelte/store";
   import { scenes, selectedScene } from "@/scene";
   import InputHandleList from "../InputHandleList.svelte";
-    import TypedHandle from "../TypedHandle.svelte";
-    import { KnownType, type PipelineConnectionType } from "@/type";
-    import { ShaderType } from "@/gl/shader";
+  import TypedHandle from "../TypedHandle.svelte";
+  import { KnownType, type PipelineConnectionType } from "@/type";
+  import { ShaderType } from "@/gl/shader";
 
   type $$Props = NodeProps;
 
@@ -42,7 +42,11 @@
 
   let handles: [string, string, PipelineConnectionType][];
   $: uniforms = shader?.data?.uniforms;
-  $: handles = ($uniforms ?? []).map((u) => [u.name, `${u.type} ${u.name}`, u.type]);
+  $: handles = ($uniforms ?? []).map((u) => [
+    u.name,
+    `${u.type} ${u.name}`,
+    u.type,
+  ]);
 
   let valueType: PipelineConnectionType = "";
   $: switch (shader?.data.type) {
@@ -65,7 +69,7 @@
   <div>
     {#if data.shaderSourceFileName !== undefined}
       <select bind:value={data.shaderSourceFileName}>
-        {#each (scene?.shaderFiles ?? []).filter(s => s.data.type !== ShaderType.Invalid) as shader}
+        {#each (scene?.shaderFiles ?? []).filter((s) => s.data.type !== ShaderType.Invalid) as shader}
           <option value={shader.filename}>{shader.filename}</option>
         {/each}
       </select>
@@ -73,7 +77,12 @@
   </div>
 
   <InputHandleList {handles} top={60} />
-  <TypedHandle type="source" position={Position.Right} valueType={valueType} id="__output" />
+  <TypedHandle
+    type="source"
+    position={Position.Right}
+    {valueType}
+    id="__output"
+  />
 </div>
 
 <style>

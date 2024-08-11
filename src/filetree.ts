@@ -1,6 +1,12 @@
 import { get, writable, type Writable } from "svelte/store";
 import { Shader, ShaderType } from "./gl/shader";
-import { deserialize, scenes, selectedScene, serialize, type Scene } from "@/scene";
+import {
+  deserialize,
+  scenes,
+  selectedScene,
+  serialize,
+  type Scene,
+} from "@/scene";
 import { MACRO_EDITOR_SELECTED_MACRO, newMacro, type Macro } from "./macro";
 import { notify } from "./components/Notification/notifications";
 
@@ -53,11 +59,11 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
       default:
         return null;
     }
-  };
+  }
 
   itemName(shader: Shader): string {
     return shader.filename;
-  };
+  }
 
   add() {
     scenes.update((p) => {
@@ -68,7 +74,7 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
       }
       return p;
     });
-  };
+  }
 
   remove() {
     scenes.update((p) => {
@@ -83,19 +89,19 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
 
           this.selected?.set(
             scene.shaderFiles[index]?.filename ||
-            scene.shaderFiles[index - 1]?.filename ||
-            "",
+              scene.shaderFiles[index - 1]?.filename ||
+              "",
           );
         }
       }
       return p;
     });
-  };
+  }
 
   rename(item: Shader, name: string) {
     item.updateFilename(name);
     scenes.update((p) => p);
-  };
+  }
 
   duplicate(item: Shader) {
     scenes.update((p) => {
@@ -105,7 +111,7 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
       }
       return p;
     });
-  };
+  }
 }
 
 export class MacroProvider extends FileTreeProvider<Macro> {
@@ -149,15 +155,15 @@ export class MacroProvider extends FileTreeProvider<Macro> {
     scenes.update((p) => {
       let scene = p.find((p) => p.name === get(selectedScene));
       if (scene) {
-        let index = scene.macros.findIndex((s) => s.name === get(this.selected));
+        let index = scene.macros.findIndex(
+          (s) => s.name === get(this.selected),
+        );
 
         if (index !== -1) {
           scene.macros.splice(index, 1);
 
           this.selected.set(
-            scene.macros[index]?.name ||
-            scene.macros[index - 1]?.name ||
-            "",
+            scene.macros[index]?.name || scene.macros[index - 1]?.name || "",
           );
         }
       }

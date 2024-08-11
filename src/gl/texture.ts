@@ -20,7 +20,10 @@ export enum TextureResizeMode {
   Linear = "Linear",
 }
 
-export function getResizeMode(gl: WebGL2RenderingContext, mode: TextureResizeMode): GLenum {
+export function getResizeMode(
+  gl: WebGL2RenderingContext,
+  mode: TextureResizeMode,
+): GLenum {
   switch (mode) {
     case TextureResizeMode.Nearest:
       return gl.NEAREST;
@@ -29,7 +32,10 @@ export function getResizeMode(gl: WebGL2RenderingContext, mode: TextureResizeMod
   }
 }
 
-export function loadImageTexture(gl: WebGL2RenderingContext, url: string): WebGLTexture {
+export function loadImageTexture(
+  gl: WebGL2RenderingContext,
+  url: string,
+): WebGLTexture {
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -42,12 +48,12 @@ export function loadImageTexture(gl: WebGL2RenderingContext, url: string): WebGL
     0,
     gl.RGBA,
     gl.UNSIGNED_BYTE,
-    new Uint8Array([0, 0, 255, 255])
+    new Uint8Array([0, 0, 255, 255]),
   );
 
   const image = new Image();
   image.src = url;
-  image.addEventListener("load", function() {
+  image.addEventListener("load", function () {
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
@@ -64,7 +70,10 @@ export function loadImageTexture(gl: WebGL2RenderingContext, url: string): WebGL
   return texture;
 }
 
-export function createCubeMapTexture(gl: WebGL2RenderingContext, url: string): WebGLTexture {
+export function createCubeMapTexture(
+  gl: WebGL2RenderingContext,
+  url: string,
+): WebGLTexture {
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
 
@@ -82,7 +91,7 @@ export function createCubeMapTexture(gl: WebGL2RenderingContext, url: string): W
   for (let i = 0; i < faces.length; i++) {
     const image = new Image();
     image.src = `${url}/${fileNames[i]}.png`;
-    image.addEventListener("load", function() {
+    image.addEventListener("load", function () {
       gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
       gl.texImage2D(faces[i], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
     });

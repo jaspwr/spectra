@@ -34,9 +34,8 @@ export class Notification {
 
 export function notify(message: string) {
   const notification = new Notification(message);
-  NOTIFICATIONS.update(n => [...n, notification]);
+  NOTIFICATIONS.update((n) => [...n, notification]);
   setTimeout(() => {
-    NOTIFICATIONS.update(n => n.filter(n => n.uid !== notification.uid));
+    NOTIFICATIONS.update((n) => n.filter((n) => n.uid !== notification.uid));
   }, NOTIFICATION_DURATION);
 }
-

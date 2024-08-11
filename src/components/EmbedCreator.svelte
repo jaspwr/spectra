@@ -13,7 +13,10 @@
   $: {
     url.searchParams.set("startPaused", startPaused ? "true" : "false");
     url.searchParams.set("startIdle", startIdle ? "true" : "false");
-    url.searchParams.set("defaultSourceFile", encodeURIComponent(defaultSourceFile));
+    url.searchParams.set(
+      "defaultSourceFile",
+      encodeURIComponent(defaultSourceFile),
+    );
     url.searchParams.set("scene", toUrl(scene));
     url = url;
   }

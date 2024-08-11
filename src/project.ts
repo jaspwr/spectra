@@ -2,16 +2,24 @@ import { get } from "svelte/store";
 import { notify } from "./components/Notification/notifications";
 import { Shader } from "./gl/shader";
 import { PRESENTATION, type Presentation } from "./presentation";
-import { deserialize, scenes, selectedScene, serialize, type Scene } from "./scene";
+import {
+  deserialize,
+  scenes,
+  selectedScene,
+  serialize,
+  type Scene,
+} from "./scene";
 import JSZip from "jszip";
-import { saveAs } from 'file-saver';
+import { saveAs } from "file-saver";
 
 export async function loadProject(metaUrl: string) {
   try {
-    const projectMeta = await (await fetch(metaUrl)).json() as ProjectMeta;
+    const projectMeta = (await (await fetch(metaUrl)).json()) as ProjectMeta;
     const location = metaUrl.split("/").slice(0, -1).join("/");
 
-    scenes.set(await Promise.all(projectMeta.scenes.map(s => loadScene(location, s))));
+    scenes.set(
+      await Promise.all(projectMeta.scenes.map((s) => loadScene(location, s))),
+    );
     PRESENTATION.set(projectMeta.presentation);
     selectedScene.set(get(scenes)[0]?.name ?? "");
   } catch (e) {
@@ -24,10 +32,15 @@ async function loadScene(location: string, sceneName: string): Promise<Scene> {
   console.log(`${sceneLocation}/scene.json`);
   const scene = await (await fetch(`${sceneLocation}/scene.json`)).json();
 
-  const shaders = await Promise.all(scene.shaders.map(async (s: any) => [s.filename, await loadShader(sceneLocation, s.filename)]));
+  const shaders = await Promise.all(
+    scene.shaders.map(async (s: any) => [
+      s.filename,
+      await loadShader(sceneLocation, s.filename),
+    ]),
+  );
   scene.shaders = shaders.map(([filename, contents]) => ({
     filename,
-    contents
+    contents,
   }));
 
   return deserialize(JSON.stringify(scene));
@@ -50,7 +63,8 @@ export function exportProject() {
     const sceneNames: string[] = [];
     const scenesFolder = zip.folder("scenes");
 
-    if (scenesFolder === null) throw new Error("Failed to create folder in zip");
+    if (scenesFolder === null)
+      throw new Error("Failed to create folder in zip");
     for (const scene of get(scenes)) {
       const serializedScene = serialize(scene);
       const folder = scenesFolder.folder(scene.name);
@@ -68,12 +82,12 @@ export function exportProject() {
 
     const projectMeta: ProjectMeta = {
       scenes: sceneNames,
-      presentation
+      presentation,
     };
 
     zip.file("project.json", JSON.stringify(projectMeta));
 
-    zip.generateAsync({ type: "blob" }).then(function(content) {
+    zip.generateAsync({ type: "blob" }).then(function (content) {
       saveAs(content, "project.zip");
     });
   } catch (e) {

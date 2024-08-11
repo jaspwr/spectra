@@ -33,12 +33,12 @@
     data = {
       isDepthMap: false,
       resizeMode: TextureResizeMode.Linear,
-      scaleFactor: 1.
+      scaleFactor: 1,
     };
   }
 
   if (!data.scaleFactor) {
-    data.scaleFactor = 1.;
+    data.scaleFactor = 1;
   }
 
   const resizeModes = Object.values(TextureResizeMode);

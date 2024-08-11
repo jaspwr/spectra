@@ -52,7 +52,6 @@ export class UniformTimeSetter extends UniformFloatSetter {
   }
 }
 
-
 export class UniformVec2Setter implements UniformSetter {
   protected name: string;
   protected value: [number, number];
@@ -90,7 +89,12 @@ export class UniformTextureSetter implements UniformSetter {
   private textureUnit: number;
   private isCubeMap: boolean;
 
-  public constructor(name: string, texture: WebGLTexture, textureUnit: number, isCubeMap: boolean) {
+  public constructor(
+    name: string,
+    texture: WebGLTexture,
+    textureUnit: number,
+    isCubeMap: boolean,
+  ) {
     this.name = name;
     this.texture = texture;
     this.textureUnit = textureUnit;
@@ -100,7 +104,10 @@ export class UniformTextureSetter implements UniformSetter {
   public set(gl: WebGL2RenderingContext, program: GLProgram) {
     const unit: GLenum = gl.TEXTURE0 + this.textureUnit;
     gl.activeTexture(unit);
-    gl.bindTexture(this.isCubeMap ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D, this.texture);
+    gl.bindTexture(
+      this.isCubeMap ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D,
+      this.texture,
+    );
     gl.uniform1i(program.uniforms[this.name], this.textureUnit);
   }
 
@@ -132,7 +139,7 @@ export class UniformMat4Setter implements UniformSetter {
     gl.uniformMatrix4fv(
       program.uniforms[this.name],
       false,
-      new Float32Array(this.getValue())
+      new Float32Array(this.getValue()),
     );
   }
 
@@ -159,7 +166,7 @@ export class UniformProjectionSetter extends UniformMat4Setter {
     super(name, mat4_0());
 
     this.projection = new Projection();
-    this.projection.update(p => {
+    this.projection.update((p) => {
       p.fov = fov;
       p.far = far;
       p.near = near;
@@ -175,16 +182,11 @@ export class UniformProjectionSetter extends UniformMat4Setter {
 export class UniformViewSetter extends UniformMat4Setter {
   private view: View;
 
-  public constructor(
-    name: string,
-    position: Vec3,
-    target: Vec3,
-    up: Vec3
-  ) {
+  public constructor(name: string, position: Vec3, target: Vec3, up: Vec3) {
     super(name, mat4_0());
 
     this.view = new View();
-    this.view.update(v => {
+    this.view.update((v) => {
       v.position = position;
       v.target = target;
       v.up = up;

@@ -188,7 +188,7 @@
     } else if (e.key === "F5") {
       e.preventDefault();
       presentationMode = true;
-    } else if (e.key === "r" && e.ctrlKey) { 
+    } else if (e.key === "r" && e.ctrlKey) {
       e.preventDefault();
       recompile();
     }

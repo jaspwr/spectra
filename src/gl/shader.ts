@@ -145,17 +145,17 @@ export class Shader {
     gl.shaderSource(shader, this._contents);
     gl.compileShader(shader);
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      return gl.getShaderInfoLog(shader)
-        ?.split("\n")
-        .filter((line) => /\w/.test(line))
-        .map((line) =>
-          new LintMessage(line, this._contents)
-        ) ?? [];
+      return (
+        gl
+          .getShaderInfoLog(shader)
+          ?.split("\n")
+          .filter((line) => /\w/.test(line))
+          .map((line) => new LintMessage(line, this._contents)) ?? []
+      );
     }
 
     return [];
   }
-
 }
 
 export enum LintSeverity {
@@ -176,17 +176,19 @@ export class LintMessage {
     endColumn: number;
   };
 
-  public constructor(
-    rawError: string,
-    shaderSource: string,
-  ) {
+  public constructor(rawError: string, shaderSource: string) {
     this.message = rawError;
     const parts = rawError.split(":");
 
     if (parts.length !== 5) {
       let [serverity, ...rest] = parts;
       this.severity = this.parseSeverity(serverity);
-      this.range = { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: this.endOfLine(1, shaderSource) };
+      this.range = {
+        startLineNumber: 1,
+        startColumn: 1,
+        endLineNumber: 1,
+        endColumn: this.endOfLine(1, shaderSource),
+      };
       return;
     }
 
@@ -200,7 +202,12 @@ export class LintMessage {
     const start = line.indexOf(codeParts);
     const end = start + codeParts.length;
 
-    this.range = { startLineNumber: lineNum, endLineNumber: lineNum, startColumn: start + 1, endColumn: end + 1 };
+    this.range = {
+      startLineNumber: lineNum,
+      endLineNumber: lineNum,
+      startColumn: start + 1,
+      endColumn: end + 1,
+    };
   }
 
   private parseSeverity(type: string): LintSeverity {
@@ -257,7 +264,7 @@ function shaderType(type: ShaderType): GLenum | undefined {
 
 export function compileShader(
   gl: WebGL2RenderingContext,
-  source: Shader
+  source: Shader,
 ): WebGLShader {
   const type = shaderType(source.data.type);
 

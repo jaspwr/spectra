@@ -1,17 +1,17 @@
 /**
  * This file is part of Spectra.
  *
- * Spectra is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * Spectra is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Spectra is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * Spectra is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
+ * You should have received a copy of the GNU General Public License
  * along with Spectra. If not, see <https://www.gnu.org/licenses/>.
  * */
 
@@ -24,10 +24,24 @@ import { UniformNodeType } from "./components/PipelineEditor/nodes/uniform";
 import { GeometryNodeType } from "./components/PipelineEditor/nodes/geometry";
 import { RenderStep } from "./gl/renderStep";
 import { FrameBufferTexture } from "./gl/framebuffer";
-import { createCubeMapTexture, loadImageTexture, TextureResizeMode } from "./gl/texture";
+import {
+  createCubeMapTexture,
+  loadImageTexture,
+  TextureResizeMode,
+} from "./gl/texture";
 import { FullscreenQuad, Mesh, SkyBox, type Geometry } from "./gl/geometry";
 import { GLProgram } from "./gl/glProgram";
-import { UniformFloatSetter, UniformProjectionSetter, UniformTextureSetter, UniformTimeSetter, UniformTranslationSetter, UniformVec2Setter, UniformViewSetter, UniformWindowSizeSetter, type UniformSetter } from "./gl/uniform";
+import {
+  UniformFloatSetter,
+  UniformProjectionSetter,
+  UniformTextureSetter,
+  UniformTimeSetter,
+  UniformTranslationSetter,
+  UniformVec2Setter,
+  UniformViewSetter,
+  UniformWindowSizeSetter,
+  type UniformSetter,
+} from "./gl/uniform";
 import { expandMacros } from "@/macro";
 import { get } from "svelte/store";
 
@@ -39,8 +53,8 @@ export class PipeLine {
 
     try {
       let nodes: Node[] | undefined, edges: Edge[] | undefined;
-      nodes = [...get(scene.pipelineGraph.nodes)].map(n => ({ ...n }));
-      edges = [...get(scene.pipelineGraph.edges)].map(e => ({ ...e }));
+      nodes = [...get(scene.pipelineGraph.nodes)].map((n) => ({ ...n }));
+      edges = [...get(scene.pipelineGraph.edges)].map((e) => ({ ...e }));
 
       if (nodes === undefined || edges === undefined)
         throw ["Error in graph data"];
@@ -57,24 +71,34 @@ export class PipeLine {
       const steps = nodes
         .filter((n) => n.type === "gl-program")
         .map((n) =>
-          createRenderStep(n, nodes!, edges!, scene.shaderFiles, textures, framebuffers, gl)
+          createRenderStep(
+            n,
+            nodes!,
+            edges!,
+            scene.shaderFiles,
+            textures,
+            framebuffers,
+            gl,
+          ),
         );
 
-      Promise.all(steps).then((steps) => {
-        const stepsFlat = steps.flat();
-        this.steps = stepsFlat.sort((a, b) => {
-          if (a.dependencies.includes(b.outputId)) {
-            return 1;
-          } else if (b.dependencies.includes(a.outputId)) {
-            return -1;
-          } else {
-            return 0;
-          }
+      Promise.all(steps)
+        .then((steps) => {
+          const stepsFlat = steps.flat();
+          this.steps = stepsFlat.sort((a, b) => {
+            if (a.dependencies.includes(b.outputId)) {
+              return 1;
+            } else if (b.dependencies.includes(a.outputId)) {
+              return -1;
+            } else {
+              return 0;
+            }
+          });
+          console.log(this.steps);
+        })
+        .catch((e) => {
+          eprintln(e);
         });
-        console.log(this.steps);
-      }).catch((e) => {
-        eprintln(e);
-      });
     } catch (e: any) {
       eprintln(e);
     }
@@ -115,18 +139,24 @@ function handleShader(
   ns: Node[],
   es: Edge[],
   textures: Record<string, WebGLTexture>,
-  framebuffers: Record<string, FrameBufferTexture>
+  framebuffers: Record<string, FrameBufferTexture>,
 ): {
   uniformSetters: UniformSetter[];
   dependencies: string[];
 } {
   let dependencies: string[] = es
     .filter((e) => e.target === shader.id)
-    .map((e) => ns.find(n => n.id === e.source))
+    .map((e) => ns.find((n) => n.id === e.source))
     .filter((n) => n !== undefined && n.type === "framebuffer")
     .map((n) => n!.id);
 
-  let uniformSetters = getUniformSetters(shader, ns, es, textures, framebuffers);
+  let uniformSetters = getUniformSetters(
+    shader,
+    ns,
+    es,
+    textures,
+    framebuffers,
+  );
 
   return {
     uniformSetters,
@@ -143,10 +173,10 @@ function getUniformSetters(
   ns: Node[],
   es: Edge[],
   textures: Record<string, WebGLTexture>,
-  framebuffers: Record<string, FrameBufferTexture>
+  framebuffers: Record<string, FrameBufferTexture>,
 ): UniformSetter[] {
   let textureUnitCounter = {
-    value: 0
+    value: 0,
   };
 
   return es
@@ -158,57 +188,87 @@ function getUniformSetters(
 
       switch (uniformNode.type) {
         case "uniform":
-          return handleUniformNode(uniformName, uniformNode, textures, textureUnitCounter);
+          return handleUniformNode(
+            uniformName,
+            uniformNode,
+            textures,
+            textureUnitCounter,
+          );
         case "framebuffer":
           const framebuftex = framebuffers[uniformNode.id];
           if (framebuftex === undefined) {
             throw new Error("Invalid framebuffer.");
           }
-          return new UniformTextureSetter(uniformName, framebuftex.texture, textureUnitCounter.value++, false);
+          return new UniformTextureSetter(
+            uniformName,
+            framebuftex.texture,
+            textureUnitCounter.value++,
+            false,
+          );
         default:
           throw new Error("Unsupported uniform type");
       }
-    }).filter((u) => u !== undefined);
+    })
+    .filter((u) => u !== undefined);
 }
 
 function handleUniformNode(
   uniformName: string,
   uniformNode: Node,
   textures: Record<string, WebGLTexture>,
-  textureUnitCounter: { value: number }): UniformSetter {
-
+  textureUnitCounter: { value: number },
+): UniformSetter {
   switch (uniformNode.data.type) {
     case UniformNodeType.Time:
       return new UniformTimeSetter(uniformName);
     case UniformNodeType.Tex:
-      return new UniformTextureSetter(uniformName, textures[uniformNode.data.textureSrc as string], textureUnitCounter.value++, false);
+      return new UniformTextureSetter(
+        uniformName,
+        textures[uniformNode.data.textureSrc as string],
+        textureUnitCounter.value++,
+        false,
+      );
     case UniformNodeType.Float:
-      return new UniformFloatSetter(uniformName, (uniformNode.data.value ?? 0) as number);
+      return new UniformFloatSetter(
+        uniformName,
+        (uniformNode.data.value ?? 0) as number,
+      );
     case UniformNodeType.ViewMatrix: {
       const data = uniformNode.data;
-      return new UniformViewSetter(uniformName,
-        [data.x, data.y, data.z,] as Vec3,
+      return new UniformViewSetter(
+        uniformName,
+        [data.x, data.y, data.z] as Vec3,
         [data.targetX, data.targetY, data.targetZ] as Vec3,
-        [data.upX, data.upY, data.upZ] as Vec3);
+        [data.upX, data.upY, data.upZ] as Vec3,
+      );
     }
     case UniformNodeType.ProjectionMatrix:
-      return new UniformProjectionSetter(uniformName,
+      return new UniformProjectionSetter(
+        uniformName,
         uniformNode.data.fov as number,
         uniformNode.data.far as number,
-        uniformNode.data.near as number);
+        uniformNode.data.near as number,
+      );
     case UniformNodeType.TranslationMatrix:
       return new UniformTranslationSetter(uniformName, [
         uniformNode.data.x ?? 0,
         uniformNode.data.y ?? 0,
-        uniformNode.data.z ?? 0] as Vec3);
+        uniformNode.data.z ?? 0,
+      ] as Vec3);
     case UniformNodeType.Vec2:
       return new UniformVec2Setter(uniformName, [
         uniformNode.data.x ?? 0,
-        uniformNode.data.y ?? 0] as Vec2);
+        uniformNode.data.y ?? 0,
+      ] as Vec2);
     case UniformNodeType.WindowSize:
       return new UniformWindowSizeSetter(uniformName);
     case UniformNodeType.CubeMap:
-      return new UniformTextureSetter(uniformName, textures[uniformNode.data.textureSrc as string], textureUnitCounter.value++, true);
+      return new UniformTextureSetter(
+        uniformName,
+        textures[uniformNode.data.textureSrc as string],
+        textureUnitCounter.value++,
+        true,
+      );
     default:
       throw new Error("Unsupported uniform type");
   }
@@ -216,40 +276,62 @@ function handleUniformNode(
 
 function createFramebuffers(
   ns: Node[],
-  gl: WebGL2RenderingContext
+  gl: WebGL2RenderingContext,
 ): Record<string, FrameBufferTexture> {
-  return ns.filter((n) => n.type === "framebuffer")
-    .map((n) => [n.id, new FrameBufferTexture(
-      gl,
-      1000,
-      1000,
-      (n.data.resizeMode ?? TextureResizeMode.Nearest) as TextureResizeMode,
-      n.data.scaleFactor as number,
-      n.data.isDepthMap as boolean)] as [string, FrameBufferTexture])
-    .reduce((acc, [id, fb]) => {
-      acc[id] = fb;
-      return acc;
-    }, {} as Record<string, FrameBufferTexture>);
+  return ns
+    .filter((n) => n.type === "framebuffer")
+    .map(
+      (n) =>
+        [
+          n.id,
+          new FrameBufferTexture(
+            gl,
+            1000,
+            1000,
+            (n.data.resizeMode ??
+              TextureResizeMode.Nearest) as TextureResizeMode,
+            n.data.scaleFactor as number,
+            n.data.isDepthMap as boolean,
+          ),
+        ] as [string, FrameBufferTexture],
+    )
+    .reduce(
+      (acc, [id, fb]) => {
+        acc[id] = fb;
+        return acc;
+      },
+      {} as Record<string, FrameBufferTexture>,
+    );
 }
 
 function createTextures(
   ns: Node[],
-  gl: WebGL2RenderingContext
+  gl: WebGL2RenderingContext,
 ): Record<string, WebGLTexture> {
   const uniformNodes = ns.filter((n) => n.type === "uniform");
-  const textureNodes = uniformNodes.filter((n) => n.data.type === UniformNodeType.Tex);
-  const cubeMapNodes = uniformNodes.filter((n) => n.data.type === UniformNodeType.CubeMap);
+  const textureNodes = uniformNodes.filter(
+    (n) => n.data.type === UniformNodeType.Tex,
+  );
+  const cubeMapNodes = uniformNodes.filter(
+    (n) => n.data.type === UniformNodeType.CubeMap,
+  );
 
   const textures: Record<string, WebGLTexture> = {};
 
   for (let n of textureNodes) {
     if (textures[n.data.textureSrc as string] !== undefined) continue;
-    textures[n.data.textureSrc as string] = loadImageTexture(gl, n.data.textureSrc as string);
+    textures[n.data.textureSrc as string] = loadImageTexture(
+      gl,
+      n.data.textureSrc as string,
+    );
   }
 
   for (let n of cubeMapNodes) {
     if (textures[n.data.textureSrc as string] !== undefined) continue;
-    textures[n.data.textureSrc as string] = createCubeMapTexture(gl, n.data.textureSrc as string);
+    textures[n.data.textureSrc as string] = createCubeMapTexture(
+      gl,
+      n.data.textureSrc as string,
+    );
   }
 
   return textures;
@@ -262,7 +344,7 @@ async function createRenderStep(
   shaders: Shader[],
   textures: Record<string, WebGLTexture>,
   framebuffers: Record<string, FrameBufferTexture>,
-  gl: WebGL2RenderingContext
+  gl: WebGL2RenderingContext,
 ): Promise<RenderStep[]> {
   const id = programNode.id;
   const targetedBy = es.filter((e) => e.target === id);
@@ -272,9 +354,9 @@ async function createRenderStep(
     throw new Error("Program needs at least 1 output");
   }
 
-  const outputNodes = sourcedBy.map(s => ns.find((n) => n.id === s.target));
+  const outputNodes = sourcedBy.map((s) => ns.find((n) => n.id === s.target));
 
-  let output: [(FrameBufferTexture | null), string][] = [];
+  let output: [FrameBufferTexture | null, string][] = [];
 
   for (const outputNode of outputNodes) {
     if (outputNode === undefined) {
@@ -293,23 +375,28 @@ async function createRenderStep(
     }
   }
 
-
   const vert = ns.find(
-    (ns) => ns.id === targetedBy.find((e) => e.targetHandle === "vert")?.source
+    (ns) => ns.id === targetedBy.find((e) => e.targetHandle === "vert")?.source,
   );
   const frag = ns.find(
-    (ns) => ns.id === targetedBy.find((e) => e.targetHandle === "frag")?.source
+    (ns) => ns.id === targetedBy.find((e) => e.targetHandle === "frag")?.source,
   );
   const geometry = targetedBy
     .filter((e) => e.targetHandle === "geometry")
-    .map(e => ns.find(n => n.id === e.source))
-    .filter(n => n !== undefined);
+    .map((e) => ns.find((n) => n.id === e.source))
+    .filter((n) => n !== undefined);
 
   if (frag === undefined || vert === undefined || geometry === undefined) {
     throw new Error("GL Program did not have all of the necessary inputs.");
   }
 
-  let { dependencies, uniformSetters } = handleShader(vert, ns, es, textures, framebuffers);
+  let { dependencies, uniformSetters } = handleShader(
+    vert,
+    ns,
+    es,
+    textures,
+    framebuffers,
+  );
   let frag_ = handleShader(frag, ns, es, textures, framebuffers);
   dependencies.push(...frag_.dependencies);
   uniformSetters.push(...frag_.uniformSetters);
@@ -318,10 +405,14 @@ async function createRenderStep(
   const fs = shaders.find((s) => s.filename === frag.data.shaderSourceFileName);
 
   if (vs === undefined) {
-    throw new Error(`Vertex shader ${vert.data.shaderSourceFileName} not found`);
+    throw new Error(
+      `Vertex shader ${vert.data.shaderSourceFileName} not found`,
+    );
   }
   if (fs === undefined) {
-    throw new Error(`Fragment shader ${frag.data.shaderSourceFileName} not found`);
+    throw new Error(
+      `Fragment shader ${frag.data.shaderSourceFileName} not found`,
+    );
   }
 
   let geo: Geometry[] = [];
@@ -346,5 +437,15 @@ async function createRenderStep(
 
   let program = new GLProgram(gl, [vs, fs]);
 
-  return output.map(([output, nodeId]) => new RenderStep(program, output, geo, uniformSetters, dependencies, nodeId));
+  return output.map(
+    ([output, nodeId]) =>
+      new RenderStep(
+        program,
+        output,
+        geo,
+        uniformSetters,
+        dependencies,
+        nodeId,
+      ),
+  );
 }

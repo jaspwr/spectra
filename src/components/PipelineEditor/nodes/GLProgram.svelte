@@ -17,9 +17,9 @@
 
 <script lang="ts">
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
-    import InputHandleList from "../InputHandleList.svelte";
-    import TypedHandle from "../TypedHandle.svelte";
-    import { KnownType } from "@/type";
+  import InputHandleList from "../InputHandleList.svelte";
+  import TypedHandle from "../TypedHandle.svelte";
+  import { KnownType } from "@/type";
 
   type $$Props = NodeProps;
 
@@ -35,7 +35,12 @@
 <div class="program">
   <strong>GL Program</strong>
   <InputHandleList {handles} top={33} />
-  <TypedHandle type="source" position={Position.Right} valueType={KnownType.Output} id="__output" />
+  <TypedHandle
+    type="source"
+    position={Position.Right}
+    valueType={KnownType.Output}
+    id="__output"
+  />
 </div>
 
 <style>

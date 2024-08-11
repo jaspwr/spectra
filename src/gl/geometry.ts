@@ -35,7 +35,11 @@ export class Mesh extends Geometry {
   uv: WebGLBuffer;
   vertexCount: number;
 
-  public constructor(gl: WebGL2RenderingContext, model: Model, uniformOverrides: UniformSetter[]) {
+  public constructor(
+    gl: WebGL2RenderingContext,
+    model: Model,
+    uniformOverrides: UniformSetter[],
+  ) {
     super(uniformOverrides);
     let verticesFlat: number[] = [];
     let normalsFlat: number[] = [];
@@ -57,12 +61,12 @@ export class Mesh extends Geometry {
   }
 
   public render(gl: WebGL2RenderingContext, program: GLProgram) {
-    if (program.attributes["position"] !== undefined) 
-    bindVBOToAttribute(gl, this.vertices, program.attributes["position"], 3);
-    if (program.attributes["normal"] !== undefined) 
-    bindVBOToAttribute(gl, this.normals, program.attributes["normal"], 3);
-    if (program.attributes["uv"] !== undefined) 
-    bindVBOToAttribute(gl, this.uv, program.attributes["uv"], 2);
+    if (program.attributes["position"] !== undefined)
+      bindVBOToAttribute(gl, this.vertices, program.attributes["position"], 3);
+    if (program.attributes["normal"] !== undefined)
+      bindVBOToAttribute(gl, this.normals, program.attributes["normal"], 3);
+    if (program.attributes["uv"] !== undefined)
+      bindVBOToAttribute(gl, this.uv, program.attributes["uv"], 2);
 
     gl.drawArrays(gl.TRIANGLES, 0, this.vertexCount);
   }
@@ -71,7 +75,10 @@ export class Mesh extends Geometry {
 export class FullscreenQuad extends Geometry {
   vbo: WebGLBuffer;
 
-  public constructor(gl: WebGL2RenderingContext, uniformOverrides: UniformSetter[]) {
+  public constructor(
+    gl: WebGL2RenderingContext,
+    uniformOverrides: UniformSetter[],
+  ) {
     super(uniformOverrides);
 
     const vertices = new Float32Array([
@@ -93,7 +100,7 @@ export class FullscreenQuad extends Geometry {
       gl.FLOAT,
       false,
       0,
-      0
+      0,
     );
 
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
@@ -121,12 +128,42 @@ export class SkyBox extends Geometry {
     ];
 
     const indices = new Uint16Array([
-      0, 1, 2, 2, 3, 0, // bottom
-      4, 5, 6, 6, 7, 4, // top
-      0, 4, 7, 7, 3, 0, // left
-      1, 5, 6, 6, 2, 1, // right
-      0, 1, 5, 5, 4, 0, // front
-      3, 2, 6, 6, 7, 3, // back
+      0,
+      1,
+      2,
+      2,
+      3,
+      0, // bottom
+      4,
+      5,
+      6,
+      6,
+      7,
+      4, // top
+      0,
+      4,
+      7,
+      7,
+      3,
+      0, // left
+      1,
+      5,
+      6,
+      6,
+      2,
+      1, // right
+      0,
+      1,
+      5,
+      5,
+      4,
+      0, // front
+      3,
+      2,
+      6,
+      6,
+      7,
+      3, // back
     ]);
 
     this.vbo = createVBO(gl, vertices);

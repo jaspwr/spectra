@@ -18,7 +18,7 @@
 <script lang="ts">
   import { scenes, selectedScene } from "../scene";
 
-    $: list = $scenes.find((p) => p.name === $selectedScene)?.goals || [];
+  $: list = $scenes.find((p) => p.name === $selectedScene)?.goals || [];
 </script>
 
 <h2 class="header">Goals</h2>

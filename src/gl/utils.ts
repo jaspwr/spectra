@@ -15,7 +15,10 @@
  * along with Spectra. If not, see <https://www.gnu.org/licenses/>.
  * */
 
-export function createVBO(gl: WebGL2RenderingContext, data: number[]): WebGLBuffer {
+export function createVBO(
+  gl: WebGL2RenderingContext,
+  data: number[],
+): WebGLBuffer {
   const vbo = gl.createBuffer()!;
   gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
   gl.bufferData(gl.ARRAY_BUFFER, Float32Array.from(data), gl.STATIC_DRAW);
@@ -26,7 +29,7 @@ export function bindVBOToAttribute(
   gl: WebGL2RenderingContext,
   vbo: WebGLBuffer,
   attribute: GLint,
-  size: number
+  size: number,
 ) {
   gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
   gl.enableVertexAttribArray(attribute);

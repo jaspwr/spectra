@@ -35,7 +35,7 @@ export class RenderStep {
     geometry: Geometry[],
     uniformSetters: UniformSetter[],
     dependencies: string[],
-    outputId: string
+    outputId: string,
   ) {
     this.program = program;
     this.framebuffer = framebuffer;

@@ -1,21 +1,24 @@
 /**
  * This file is part of Spectra.
  *
- * Spectra is free software: you can redistribute it and/or modify it 
- * under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
+ * Spectra is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Spectra is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * Spectra is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
+ * You should have received a copy of the GNU General Public License
  * along with Spectra. If not, see <https://www.gnu.org/licenses/>.
  * */
 
-import { type Node as SvelteFlowNode, type Edge as SvelteFlowEdge } from "@xyflow/svelte";
+import {
+  type Node as SvelteFlowNode,
+  type Edge as SvelteFlowEdge,
+} from "@xyflow/svelte";
 import { get, writable, type Writable } from "svelte/store";
 
 export interface Macro {
@@ -29,20 +32,21 @@ export function newMacro(name: string): Macro {
   const inputLabels = writable([]);
   return {
     name,
-    nodes: writable([{
-      id: "0",
-      type: "output",
-      data: {},
-      position: { x: 300, y: 0 },
-    },
-    {
-      id: "1",
-      type: "inputs",
-      data: {
-        inputLabels
+    nodes: writable([
+      {
+        id: "0",
+        type: "output",
+        data: {},
+        position: { x: 300, y: 0 },
       },
-      position: { x: 0, y: 0 },
-    }
+      {
+        id: "1",
+        type: "inputs",
+        data: {
+          inputLabels,
+        },
+        position: { x: 0, y: 0 },
+      },
     ]),
     edges: writable([]),
     inputLabels: inputLabels,
@@ -52,7 +56,11 @@ export function newMacro(name: string): Macro {
 export const MACRO_EDITOR_SELECTED_MACRO: Writable<string> = writable("");
 export const MACOR_EDITOR_INPUT_LABELS: Writable<string[]> = writable([]);
 
-export function expandMacros(nodes: SvelteFlowNode[], edges: SvelteFlowEdge[], macros: Macro[]): { ns: SvelteFlowNode[], es: SvelteFlowEdge[] } {
+export function expandMacros(
+  nodes: SvelteFlowNode[],
+  edges: SvelteFlowEdge[],
+  macros: Macro[],
+): { ns: SvelteFlowNode[]; es: SvelteFlowEdge[] } {
   let ns = [...nodes];
   let es = [...edges];
 
@@ -76,12 +84,18 @@ export function expandMacros(nodes: SvelteFlowNode[], edges: SvelteFlowEdge[], m
     const connectedToMacroNode = es.filter((e) => e.target === macroNode.id);
     const connectedFromMacroNode = es.filter((e) => e.source === macroNode.id);
 
-    const connectedToInputNode = edges.filter((e) => e.source === inputNode?.id);
-    const connectedToOutputNode = edges.filter((e) => e.target === outputNode?.id);
+    const connectedToInputNode = edges.filter(
+      (e) => e.source === inputNode?.id,
+    );
+    const connectedToOutputNode = edges.filter(
+      (e) => e.target === outputNode?.id,
+    );
 
     for (const e of connectedToMacroNode) {
       const inputName = e.targetHandle;
-      const connectedToInput = connectedToInputNode.filter((e) => e.sourceHandle === inputName);
+      const connectedToInput = connectedToInputNode.filter(
+        (e) => e.sourceHandle === inputName,
+      );
 
       for (const inputE of connectedToInput) {
         es.push({
@@ -107,13 +121,22 @@ export function expandMacros(nodes: SvelteFlowNode[], edges: SvelteFlowEdge[], m
     }
   }
 
-  ns = ns.filter(n => !(n.type === "output" || n.type === "inputs"));
-  es = es.filter(e => !(ns.find(n => n.id === e.source) === undefined || ns.find(n => n.id === e.target) === undefined));
+  ns = ns.filter((n) => !(n.type === "output" || n.type === "inputs"));
+  es = es.filter(
+    (e) =>
+      !(
+        ns.find((n) => n.id === e.source) === undefined ||
+        ns.find((n) => n.id === e.target) === undefined
+      ),
+  );
 
   return { ns, es };
 }
 
-export function getMacroNodesAndEdges(macro: Macro): { nodes: SvelteFlowNode[], edges: SvelteFlowEdge[] } {
+export function getMacroNodesAndEdges(macro: Macro): {
+  nodes: SvelteFlowNode[];
+  edges: SvelteFlowEdge[];
+} {
   let nodes: SvelteFlowNode[] | undefined, edges: SvelteFlowEdge[] | undefined;
   nodes = [...get(macro.nodes)];
   edges = [...get(macro.edges)];

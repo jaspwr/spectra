@@ -19,6 +19,6 @@ export enum KnownType {
 
 export function typeCol(type: PipelineConnectionType): string {
   if (type === "") return "#000";
-  const hue = hashString(type) * 1242.46 % 360;
+  const hue = (hashString(type) * 1242.46) % 360;
   return `hsl(${hue}, 100%, 50%)`;
 }

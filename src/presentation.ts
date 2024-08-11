@@ -30,7 +30,7 @@ export const DEFAULT_PRESENTATION: Presentation = {
       columns: [
         {
           type: ColumnType.Markdown,
-          markdownContent: `# Welcome to the *presentation*!`
+          markdownContent: `# Welcome to the *presentation*!`,
         },
         {
           type: ColumnType.GlWindow,
@@ -38,10 +38,11 @@ export const DEFAULT_PRESENTATION: Presentation = {
         {
           type: ColumnType.CodeEditor,
           filename: "main.frag",
-        }
+        },
       ],
     },
-  ]
-}
+  ],
+};
 
-export const PRESENTATION: Writable<Presentation> = writable(DEFAULT_PRESENTATION);
+export const PRESENTATION: Writable<Presentation> =
+  writable(DEFAULT_PRESENTATION);

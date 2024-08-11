@@ -248,7 +248,10 @@ languages.setMonarchTokensProvider("glsl", {
     ],
 
     numbers: [
-      [/(?:(?:\d+\.\d*|\.\d+)(?:[eE][+-]?\d+)?|\d+[eE][+-]?\d+)[fF]?/, "number.float"],
+      [
+        /(?:(?:\d+\.\d*|\.\d+)(?:[eE][+-]?\d+)?|\d+[eE][+-]?\d+)[fF]?/,
+        "number.float",
+      ],
       [/0[xX][0-9a-fA-F]+[uU]?/, "number.hex"],
       [/0[0-7]+[uU]?/, "number.octal"],
       [/\d+[uU]?/, "number"],

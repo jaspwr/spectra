@@ -31,7 +31,7 @@ export class GLProgram {
     gl.linkProgram(this.program);
     if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
       throw new Error(
-        `Failed to link program: ${gl.getProgramInfoLog(this.program)}`
+        `Failed to link program: ${gl.getProgramInfoLog(this.program)}`,
       );
     }
 
@@ -48,7 +48,7 @@ export class GLProgram {
       for (let uniform of uniformDefs) {
         uniforms[uniform.name] = gl.getUniformLocation(
           this.program,
-          uniform.name
+          uniform.name,
         )!;
         uniformTypes[uniform.name] = uniform.type;
       }

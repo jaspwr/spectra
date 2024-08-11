@@ -24,8 +24,8 @@
     DEFAULT_PROJECTION,
     DEFAULT_VIEW,
   } from "./uniform";
-    import { KnownType } from "@/type";
-    import TypedHandle from "../TypedHandle.svelte";
+  import { KnownType } from "@/type";
+  import TypedHandle from "../TypedHandle.svelte";
 
   type $$Props = NodeProps;
 
@@ -51,7 +51,7 @@
   }
 
   let outputType = "";
- 
+
   $: switch (data.type) {
     case UniformNodeType.Float:
       outputType = KnownType.Float;
@@ -81,7 +81,6 @@
       outputType = KnownType.Vec2;
       break;
   }
-
 </script>
 
 <div class="uniform">
@@ -175,12 +174,21 @@
       {:else if data.type === UniformNodeType.CubeMap}
         src:
         <input type="text" bind:value={data.textureSrc} />
-        <img src={`${data.textureSrc}/right.png`} alt="Texture preview" width="100px" />
+        <img
+          src={`${data.textureSrc}/right.png`}
+          alt="Texture preview"
+          width="100px"
+        />
       {/if}
     </div>
   </div>
 
-  <TypedHandle type="source" position={Position.Right} valueType={outputType} id="__output" />
+  <TypedHandle
+    type="source"
+    position={Position.Right}
+    valueType={outputType}
+    id="__output"
+  />
 </div>
 
 <style>

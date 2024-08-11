@@ -17,7 +17,10 @@ const url = new URL(window.location.href);
 export const URL_PARAMETERS: UrlParameters = {
   isEmbedded: url.searchParams.get("embedded") == "true",
   startIdle: url.searchParams.get("startIdle") == "true",
-  scene: url.searchParams.get("scene") ?? url.searchParams.get("project") ?? undefined, // project is deprecated
+  scene:
+    url.searchParams.get("scene") ??
+    url.searchParams.get("project") ??
+    undefined, // project is deprecated
   defaultSourceFile: url.searchParams.get("defaultSourceFile") ?? undefined,
   startPaused: url.searchParams.get("startPaused") == "true",
 };

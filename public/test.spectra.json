@@ -1,1 +1,127 @@
-{"name":"Test","goals":[{"name":"Modify colours","done":false},{"name":"Swizzle a vector","done":false},{"name":"Use UV coords","done":false},{"name":"Use uniforms","done":false},{"name":"Sample from a texture","done":false}],"shaders":[{"filename":"main.frag","contents":"#version 100\n\n#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform float time;\n\nvarying vec2 uvCoords;\n\nvoid main(void) {\n    gl_FragColor = vec4(uvCoords.x + sin(time), cos(uvCoords.y + time), 1., 1.) / 2.0;\n}\n"},{"filename":"main.vert","contents":"#version 100\n\nattribute vec4 position;\n\nvarying vec2 uvCoords;\n\nvoid main(void) {\n    uvCoords = (position.xy + 1.0)/2.0;\n    gl_Position = position;\n}\n"}],"pipelineGraph":{"nodes":[{"id":"0.46183791393277907","type":"gl-program","position":{"x":266,"y":125},"data":{"label":"gl-program node"},"origin":[0.5,0],"measured":{"width":132,"height":87},"selected":false,"dragging":false},{"id":"0.9361335759625984","type":"window","position":{"x":393.5,"y":150},"data":{"label":"window node"},"origin":[0.5,0],"measured":{"width":87,"height":40},"selected":false,"dragging":false},{"id":"0.13214298723530327","type":"shader","position":{"x":-14,"y":75},"data":{"label":"shader node","shaderSourceFileName":"main.frag"},"origin":[0.5,0],"measured":{"width":222,"height":88},"selected":false,"dragging":false},{"id":"0.5773928601448672","type":"shader","position":{"x":-14,"y":-25},"data":{"label":"shader node","shaderSourceFileName":"main.vert"},"origin":[0.5,0],"measured":{"width":222,"height":72},"selected":false,"dragging":false},{"id":"0.6592953329742872","type":"geometry","position":{"x":36.5,"y":200},"data":{"label":"geometry node","type":"Screen Quad","uniformOverrides":[]},"origin":[0.5,0],"measured":{"width":133,"height":121},"selected":false,"dragging":false},{"id":"0.8082024332528859","type":"uniform","position":{"x":-294,"y":100},"data":{"label":"uniform node","type":"time"},"origin":[0.5,0],"measured":{"width":162,"height":74},"selected":false,"dragging":false}],"edges":[{"source":"0.46183791393277907","target":"0.9361335759625984","targetHandle":"in","id":"xy-edge__0.46183791393277907-0.9361335759625984in","selected":false},{"source":"0.13214298723530327","target":"0.46183791393277907","targetHandle":"frag","id":"xy-edge__0.13214298723530327-0.46183791393277907frag","selected":false},{"source":"0.5773928601448672","target":"0.46183791393277907","targetHandle":"vert","id":"xy-edge__0.5773928601448672-0.46183791393277907vert","selected":false},{"source":"0.6592953329742872","sourceHandle":"__output","target":"0.46183791393277907","targetHandle":"geometry","id":"xy-edge__0.6592953329742872__output-0.46183791393277907geometry","selected":false},{"source":"0.8082024332528859","target":"0.13214298723530327","targetHandle":"time","id":"xy-edge__0.8082024332528859-0.13214298723530327time","selected":false}]},"macros":[]}
+{
+  "name": "Test",
+  "goals": [
+    { "name": "Modify colours", "done": false },
+    { "name": "Swizzle a vector", "done": false },
+    { "name": "Use UV coords", "done": false },
+    { "name": "Use uniforms", "done": false },
+    { "name": "Sample from a texture", "done": false }
+  ],
+  "shaders": [
+    {
+      "filename": "main.frag",
+      "contents": "#version 100\n\n#ifdef GL_ES\nprecision highp float;\n#endif\n\nuniform float time;\n\nvarying vec2 uvCoords;\n\nvoid main(void) {\n    gl_FragColor = vec4(uvCoords.x + sin(time), cos(uvCoords.y + time), 1., 1.) / 2.0;\n}\n"
+    },
+    {
+      "filename": "main.vert",
+      "contents": "#version 100\n\nattribute vec4 position;\n\nvarying vec2 uvCoords;\n\nvoid main(void) {\n    uvCoords = (position.xy + 1.0)/2.0;\n    gl_Position = position;\n}\n"
+    }
+  ],
+  "pipelineGraph": {
+    "nodes": [
+      {
+        "id": "0.46183791393277907",
+        "type": "gl-program",
+        "position": { "x": 266, "y": 125 },
+        "data": { "label": "gl-program node" },
+        "origin": [0.5, 0],
+        "measured": { "width": 132, "height": 87 },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "0.9361335759625984",
+        "type": "window",
+        "position": { "x": 393.5, "y": 150 },
+        "data": { "label": "window node" },
+        "origin": [0.5, 0],
+        "measured": { "width": 87, "height": 40 },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "0.13214298723530327",
+        "type": "shader",
+        "position": { "x": -14, "y": 75 },
+        "data": { "label": "shader node", "shaderSourceFileName": "main.frag" },
+        "origin": [0.5, 0],
+        "measured": { "width": 222, "height": 88 },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "0.5773928601448672",
+        "type": "shader",
+        "position": { "x": -14, "y": -25 },
+        "data": { "label": "shader node", "shaderSourceFileName": "main.vert" },
+        "origin": [0.5, 0],
+        "measured": { "width": 222, "height": 72 },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "0.6592953329742872",
+        "type": "geometry",
+        "position": { "x": 36.5, "y": 200 },
+        "data": {
+          "label": "geometry node",
+          "type": "Screen Quad",
+          "uniformOverrides": []
+        },
+        "origin": [0.5, 0],
+        "measured": { "width": 133, "height": 121 },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "0.8082024332528859",
+        "type": "uniform",
+        "position": { "x": -294, "y": 100 },
+        "data": { "label": "uniform node", "type": "time" },
+        "origin": [0.5, 0],
+        "measured": { "width": 162, "height": 74 },
+        "selected": false,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "0.46183791393277907",
+        "target": "0.9361335759625984",
+        "targetHandle": "in",
+        "id": "xy-edge__0.46183791393277907-0.9361335759625984in",
+        "selected": false
+      },
+      {
+        "source": "0.13214298723530327",
+        "target": "0.46183791393277907",
+        "targetHandle": "frag",
+        "id": "xy-edge__0.13214298723530327-0.46183791393277907frag",
+        "selected": false
+      },
+      {
+        "source": "0.5773928601448672",
+        "target": "0.46183791393277907",
+        "targetHandle": "vert",
+        "id": "xy-edge__0.5773928601448672-0.46183791393277907vert",
+        "selected": false
+      },
+      {
+        "source": "0.6592953329742872",
+        "sourceHandle": "__output",
+        "target": "0.46183791393277907",
+        "targetHandle": "geometry",
+        "id": "xy-edge__0.6592953329742872__output-0.46183791393277907geometry",
+        "selected": false
+      },
+      {
+        "source": "0.8082024332528859",
+        "target": "0.13214298723530327",
+        "targetHandle": "time",
+        "id": "xy-edge__0.8082024332528859-0.13214298723530327time",
+        "selected": false
+      }
+    ]
+  },
+  "macros": []
+}

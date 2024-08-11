@@ -25,7 +25,7 @@
 
 <div class="__output">
   <strong>Macro Output</strong>
-  <Handle type="target" position={Position.Left} id="in"/>
+  <Handle type="target" position={Position.Left} id="in" />
 </div>
 
 <style>

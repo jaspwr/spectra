@@ -35,7 +35,6 @@
     "macro",
   ];
 
-
   export let isMacro: boolean = false;
 
   if (isMacro) {
