@@ -16,9 +16,10 @@ export async function loadProject(metaUrl: string) {
   try {
     const projectMeta = (await (await fetch(metaUrl)).json()) as ProjectMeta;
     const location = metaUrl.split("/").slice(0, -1).join("/");
+    const urlParams = metaUrl.includes("?") ? metaUrl.slice(metaUrl.indexOf("?")) : "";
 
     scenes.set(
-      await Promise.all(projectMeta.scenes.map((s) => loadScene(location, s))),
+      await Promise.all(projectMeta.scenes.map((s) => loadScene(location, s, urlParams))),
     );
     PRESENTATION.set(projectMeta.presentation);
     selectedScene.set(get(scenes)[0]?.name ?? "");
@@ -27,15 +28,15 @@ export async function loadProject(metaUrl: string) {
   }
 }
 
-async function loadScene(location: string, sceneName: string): Promise<Scene> {
+async function loadScene(location: string, sceneName: string, urlParams: string): Promise<Scene> {
+  console.log("Loading scene", sceneName);
   const sceneLocation = `${location}/scenes/${sceneName}`;
-  console.log(`${sceneLocation}/scene.json`);
-  const scene = await (await fetch(`${sceneLocation}/scene.json`)).json();
+  const scene = await (await fetch(`${sceneLocation}/scene.json${urlParams}`)).json();
 
   const shaders = await Promise.all(
     scene.shaders.map(async (s: any) => [
       s.filename,
-      await loadShader(sceneLocation, s.filename),
+      await loadShader(sceneLocation, s.filename, urlParams),
     ]),
   );
   scene.shaders = shaders.map(([filename, contents]) => ({
@@ -46,8 +47,8 @@ async function loadScene(location: string, sceneName: string): Promise<Scene> {
   return deserialize(JSON.stringify(scene));
 }
 
-async function loadShader(location: string, filename: string): Promise<string> {
-  const content = await (await fetch(`${location}/${filename}`)).text();
+async function loadShader(location: string, filename: string, urlParams: string): Promise<string> {
+  const content = await (await fetch(`${location}/${filename}${urlParams}`)).text();
   return content;
 }
 
@@ -87,7 +88,7 @@ export function exportProject() {
 
     zip.file("project.json", JSON.stringify(projectMeta));
 
-    zip.generateAsync({ type: "blob" }).then(function (content) {
+    zip.generateAsync({ type: "blob" }).then(function(content) {
       saveAs(content, "project.zip");
     });
   } catch (e) {
