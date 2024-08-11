@@ -1,19 +1,31 @@
+<!--
+  This file is part of Spectra.
+
+  Spectra is free software: you can redistribute it and/or modify it 
+  under the terms of the GNU General Public License as published by 
+  the Free Software Foundation, either version 3 of the License, or 
+  (at your option) any later version.
+
+  Spectra is distributed in the hope that it will be useful, but 
+  WITHOUT ANY WARRANTY; without even the implied warranty of 
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License 
+  along with Spectra. If not, see <https://www.gnu.org/licenses/>.
+-->
+
 <script lang="ts">
   import { selectedScene, type Scene } from "@/scene";
   import CloseButton from "./CloseButton.svelte";
-  import {
-    type Presentation,
-    DEFAULT_PRESENTATION,
-    ColumnType,
-    PRESENTATION,
-  } from "@/presentation";
+  import { ColumnType, PRESENTATION } from "@/presentation";
   import GlWindow from "./GlWindow.svelte";
   import CodeEditor from "./CodeEditor.svelte";
   import { marked } from "marked";
   import katex from "marked-katex-extension";
   import Markdown from "svelte-markdown";
   import KatexRenderer from "./KatexRenderer.svelte";
-  import { onDestroy, onMount } from "svelte";
+  import { onMount } from "svelte";
   import { scenes } from "@/scene";
 
   marked.use(katex({ throwOnError: true }));
