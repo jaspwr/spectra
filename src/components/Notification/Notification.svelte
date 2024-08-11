@@ -36,5 +36,6 @@
     color: var(--text-sec);
     box-shadow: var(--shadow);
     transition: all 0.3s ease-in-out;
+    pointer-events: none;
   }
 </style>

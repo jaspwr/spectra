@@ -114,11 +114,8 @@
   }: {
     detail: { event: any; node: any };
   }) {
-    // Prevent native context menu from showing
     event.preventDefault();
 
-    // Calculate position of the context menu. We want to make sure it
-    // doesn't get positioned off-screen.
     menu = {
       id: node.id,
       top: event.clientY < height - 200 ? event.clientY : undefined,
@@ -129,7 +126,6 @@
     };
   }
 
-  // Close the context menu if it's open whenever the window is clicked.
   function handlePaneClick() {
     menu = null;
   }

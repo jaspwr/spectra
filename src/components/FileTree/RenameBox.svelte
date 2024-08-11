@@ -5,14 +5,22 @@
   export let setValue: (v: string) => void;
   export let unselect: () => void;
 
+  let hasSet: boolean = false;
   let renameBuffer: string = initialValue;
   let inputElem: HTMLInputElement;
+
+  const runSetValue = () => {
+    if (!hasSet) {
+      setValue(renameBuffer);
+      hasSet = true;
+    }
+  };
 
   const keypressListener = (event: KeyboardEvent) => {
     if (event.key === "Escape") {
       unselect();
     } else if (event.key === "Enter") {
-      setValue(renameBuffer);
+      runSetValue();
       unselect();
     }
   };
@@ -20,7 +28,7 @@
   onMount(() => {
     document.addEventListener("keydown", keypressListener);
     inputElem.onblur = () => {
-      setValue(renameBuffer);
+      runSetValue();
       unselect();
     };
     inputElem.focus();

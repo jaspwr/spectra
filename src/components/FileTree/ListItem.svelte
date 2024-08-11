@@ -1,9 +1,11 @@
 <script lang="ts">
+    import { notify } from "../Notification/notifications";
+
   import type { DropDownListItem } from "../DropDownList/dropdownlist";
 
   import ListButton from "../DropDownList/ListButton.svelte";
 
-  import type { Writable } from "svelte/store";
+  import { get, type Writable } from "svelte/store";
 
   import RenameBox from "./RenameBox.svelte";
 
@@ -56,6 +58,23 @@
         initialValue={provider.itemName(shader)}
         unselect={() => (renaming = false)}
         setValue={(v) => {
+          if (v === "") {
+            notify("Name cannot be empty.");
+            return;
+          }
+
+          if (v === provider.itemName(shader)) {
+            return;
+          }
+
+          if (
+            get(provider.list).find((s) => provider.itemName(s) === v) !==
+            undefined
+          ) {
+            notify("Item already exists.");
+            return;
+          }
+
           provider.rename(shader, v);
           rerenderList();
         }}
