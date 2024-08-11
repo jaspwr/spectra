@@ -82,8 +82,8 @@
   };
 
   onMount(() => {
-    window.addEventListener("keydown", keyHandler);
-    return () => window.removeEventListener("keydown", keyHandler);
+    // window.addEventListener("keydown", keyHandler);
+    // return () => window.removeEventListener("keydown", keyHandler);
   });
 
   const handleConent = (content: string | string[] | undefined): string => {
