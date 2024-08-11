@@ -72,7 +72,6 @@ export interface Scene {
   selectedShaderFile: Writable<string>;
   pipelineGraph: PipelineGraph;
   macros: Macro[];
-  presentation?: Presentation;
 }
 
 export interface Goal {

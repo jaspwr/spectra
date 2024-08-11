@@ -85,14 +85,29 @@
 
     return content;
   };
+
+  const styles = {
+    textPrimary: "#fff",
+    textSecondary: "#adadad",
+    background: "#0d0d0d",
+    icon: "progsoc.png",
+  };
 </script>
 
 <CloseButton {onClose} />
+<h1 class="title" style="color: {styles.textPrimary}">
+  {#if styles.icon !== undefined}
+    <img class="icon" src="progsoc.png" alt="icon" />
+  {/if}
+  {#if slide.title !== undefined}
+    {slide.title}
+  {/if}
+</h1>
 
-{#if slide.title !== undefined}
-  <h1 class="title">{slide.title}</h1>
-{/if}
-<div class="content">
+<div
+  class="content"
+  style="background: {styles.background}; color: {styles.textSecondary};"
+>
   {#each slide.columns as column}
     <div class="column">
       {#if column.type === ColumnType.Markdown}
@@ -143,6 +158,9 @@
     top: 0px;
     left: 50px;
     font-size: 3.6rem;
+    z-index: 100;
+    display: flex;
+    align-items: center;
   }
 
   .slide-controls {
@@ -176,5 +194,10 @@
 
   .recompile:hover {
     opacity: 1;
+  }
+
+  .icon {
+    width: 4rem;
+    margin-right: 3rem;
   }
 </style>
