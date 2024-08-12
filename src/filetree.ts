@@ -113,7 +113,16 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
     scenes.update((p) => {
       let scene = p.find((p) => p.name === get(selectedScene));
       if (scene) {
-        scene.shaderFiles.push(new Shader(item.filename, item.contents));
+        const fileName = item.filename.split(".").slice(0, -1).join(".");
+        const ext = item.filename.split(".").slice(-1)[0];
+
+        let number = 1;
+        const newName = () => `${fileName}_${number}.${ext}`;
+        while (scene.shaderFiles.find((s) => s.filename === newName()) !== undefined) {
+          number += 1;
+        }
+
+        scene.shaderFiles.push(new Shader(newName(), item.contents));
       }
       return p;
     });
@@ -237,7 +246,14 @@ export class SceneProvider extends FileTreeProvider<Scene> {
 
   duplicate(item: Scene) {
     const cpy = deserialize(JSON.stringify(serialize(item)));
-    cpy.name = `${item.name} (copy)`;
+
+    let number = 1;
+    const newName = () => `${item.name}_${number}`;
+    while (get(this.list).find((s) => s.name === newName()) !== undefined) {
+      number += 1;
+    }
+
+    cpy.name = newName();
     scenes.update((p) => {
       p.push(cpy);
       return p;
