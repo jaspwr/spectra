@@ -23,7 +23,7 @@ import { GL_ERRORS, type Vec2, type Vec3 } from "./utils";
 import { UniformNodeType } from "./components/PipelineEditor/nodes/uniform";
 import { GeometryNodeType } from "./components/PipelineEditor/nodes/geometry";
 import { RenderStep } from "./gl/renderStep";
-import { FrameBufferTexture } from "./gl/framebuffer";
+import { FrameBufferTexture, FrameBufferType } from "./gl/framebuffer";
 import {
   createCubeMapTexture,
   loadImageTexture,
@@ -281,8 +281,16 @@ function createFramebuffers(
   return ns
     .filter((n) => n.type === "framebuffer")
     .map(
-      (n) =>
-        [
+      (n) => {
+        let type_ = FrameBufferType.Colour;
+        if (n.data.isDepthMap) {
+          type_ = FrameBufferType.Depth;
+        }
+        if (n.data.frameBufferType !== undefined) {
+          type_ = n.data.frameBufferType as FrameBufferType;
+        }
+
+        return [
           n.id,
           new FrameBufferTexture(
             gl,
@@ -291,9 +299,10 @@ function createFramebuffers(
             (n.data.resizeMode ??
               TextureResizeMode.Nearest) as TextureResizeMode,
             n.data.scaleFactor as number,
-            n.data.isDepthMap as boolean,
+            type_,
           ),
-        ] as [string, FrameBufferTexture],
+        ] as [string, FrameBufferTexture];
+      }
     )
     .reduce(
       (acc, [id, fb]) => {

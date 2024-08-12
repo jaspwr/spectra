@@ -50,11 +50,7 @@ export class RenderStep {
       this.framebuffer.resize(gl, gl.canvas.height, gl.canvas.width);
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer.framebuffer);
       gl.viewport(0, 0, this.framebuffer.width, this.framebuffer.height);
-      if (this.framebuffer.isDepthMap) {
-        gl.clear(gl.DEPTH_BUFFER_BIT);
-      } else {
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      }
+      gl.clear(this.framebuffer.clearFlags(gl));
     }
 
     gl.useProgram(this.program.program);

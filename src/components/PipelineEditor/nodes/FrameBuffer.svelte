@@ -20,18 +20,20 @@
   import { Handle, Position, type NodeProps } from "@xyflow/svelte";
   import TypedHandle from "../TypedHandle.svelte";
   import { KnownType } from "@/type";
+  import { FrameBufferType } from "@/gl/framebuffer";
 
   type $$Props = NodeProps;
 
   export let data: {
-    isDepthMap: boolean;
+    frameBufferType?: FrameBufferType;
+    isDepthMap?: boolean; // Deprecated
     resizeMode: TextureResizeMode;
     scaleFactor: number;
   };
 
   if (!data) {
     data = {
-      isDepthMap: false,
+      frameBufferType: FrameBufferType.Colour,
       resizeMode: TextureResizeMode.Linear,
       scaleFactor: 1,
     };
@@ -41,7 +43,12 @@
     data.scaleFactor = 1;
   }
 
+  if (data.isDepthMap) {
+    data.frameBufferType = FrameBufferType.Depth;
+  }
+
   const resizeModes = Object.values(TextureResizeMode);
+  const frameBufferTypes = Object.values(FrameBufferType);
 </script>
 
 <div class="pipeline-node">
@@ -52,18 +59,35 @@
     valueType={KnownType.Output}
   />
   <strong>FrameBuf</strong>
-  <div class="checkbox-and-label">
-    <input type="checkbox" bind:checked={data.isDepthMap} />
-    <span class="small">Depth Map</span>
-  </div>
-  <select bind:value={data.resizeMode}>
-    {#each resizeModes as mode}
-      <option>{mode}</option>
-    {/each}
-  </select>
   <br />
-  Scale:
-  <input type="number" bind:value={data.scaleFactor} step="0.1" />
+  <table>
+    <tr>
+      <td> Filter: </td>
+      <td>
+        <select bind:value={data.resizeMode}>
+          {#each resizeModes as mode}
+            <option>{mode}</option>
+          {/each}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td> Format: </td>
+      <td>
+        <select bind:value={data.frameBufferType}>
+          {#each frameBufferTypes as t}
+            <option>{t}</option>
+          {/each}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td> Scale: </td>
+      <td>
+        <input type="number" bind:value={data.scaleFactor} step="0.1" />
+      </td>
+    </tr>
+  </table>
   <TypedHandle
     type="source"
     position={Position.Right}

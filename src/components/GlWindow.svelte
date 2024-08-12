@@ -106,6 +106,11 @@
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
 
+    const floatTexExt = gl.getExtension("EXT_color_buffer_float");
+    if (!floatTexExt) {
+      notify("HDR framebuffers not supported in your browser.");
+    }
+
     resize();
 
     requestAnimationFrame(loop);
