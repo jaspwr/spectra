@@ -21,10 +21,15 @@
 
   type Item = $$Generic;
 
+  export let provider: FileTreeProvider<Item>;
+
   $: list = provider.list;
   $: selected = provider.selected;
 
-  export let provider: FileTreeProvider<Item>;
+  // Hack to force this to update when the scene is changed
+  provider.list.subscribe(() => {
+    selected = provider.selected;
+  });
 
   $: sortedList = [...$list].sort((a, b) => {
     if (provider.itemName(a) < provider.itemName(b)) {

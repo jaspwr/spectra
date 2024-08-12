@@ -26,9 +26,14 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
   constructor() {
     super();
 
-    scenes.subscribe(() => this.setList());
-    selectedScene.subscribe(() => this.setList());
-    scenes.subscribe(() => this.setSelected());
+    scenes.subscribe(() => {
+      this.setList()
+      this.setSelected();
+    });
+    selectedScene.subscribe(() => {
+      this.setList();
+      this.setSelected();
+    });
 
     this.setList();
     this.setSelected();
@@ -45,6 +50,7 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
     const scene = get(scenes).find((p) => p.name === get(selectedScene));
     if (scene?.selectedShaderFile) {
       this.selected = scene.selectedShaderFile;
+      this.setList();
     }
   }
 
@@ -89,8 +95,8 @@ export class ShaderFilesProvider extends FileTreeProvider<Shader> {
 
           this.selected?.set(
             scene.shaderFiles[index]?.filename ||
-              scene.shaderFiles[index - 1]?.filename ||
-              "",
+            scene.shaderFiles[index - 1]?.filename ||
+            "",
           );
         }
       }
