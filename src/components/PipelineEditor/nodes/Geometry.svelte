@@ -86,7 +86,7 @@
     </button>
     <div>
       {#each data.uniformOverrides as override, i}
-        <input type="text" bind:value={override} />
+        <input type="text" bind:value={override} /><br />
         <Handle
           type="target"
           position={Position.Left}
