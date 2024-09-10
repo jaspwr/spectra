@@ -84,9 +84,10 @@
     ManagingScenes,
   }
 
-  let appState = URL_PARAMETERS.isEmbedded
-    ? AppState.Normal
-    : AppState.DevelopmentStateInfo;
+  // let appState = URL_PARAMETERS.isEmbedded
+  //   ? AppState.Normal
+  //   : AppState.DevelopmentStateInfo;
+  let appState = AppState.Normal;
 
   let started = false;
 
