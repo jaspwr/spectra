@@ -122,7 +122,7 @@
       title: "File",
       items: [
         {
-          title: "Import",
+          title: "Import from URL",
           action: openProject,
         },
         {
