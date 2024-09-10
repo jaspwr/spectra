@@ -10,6 +10,7 @@ interface UrlParameters {
   defaultSourceFile?: string;
   startIdle?: boolean;
   startPaused?: boolean;
+  externalProject?: string;
 }
 
 const url = new URL(window.location.href);
@@ -23,6 +24,7 @@ export const URL_PARAMETERS: UrlParameters = {
     undefined, // project is deprecated
   defaultSourceFile: url.searchParams.get("defaultSourceFile") ?? undefined,
   startPaused: url.searchParams.get("startPaused") == "true",
+  externalProject: url.searchParams.get("externalProject") ?? undefined,
 };
 
 export function nonEmbedUrl(): string {

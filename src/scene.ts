@@ -25,6 +25,7 @@ import type {
 import type { Macro } from "@/macro";
 import { URL_PARAMETERS } from "./url";
 import type { Presentation } from "./presentation";
+import { loadProject } from "./project";
 
 // The filename of the selected scene
 export const selectedScene = writable<string>("");
@@ -64,6 +65,10 @@ for (let scene of _scenes) {
 }
 
 export const scenes = writable<Scene[]>(_scenes);
+
+if (URL_PARAMETERS.externalProject !== undefined) {
+  loadProject(URL_PARAMETERS.externalProject);
+}
 
 export interface Scene {
   name: string;
