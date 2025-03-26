@@ -1,3 +1,5 @@
+[Try it!](https://jaspwr.github.io/spectra/)
+
 # This project is unfinished
 
 <p align="center">
